@@ -1,0 +1,11 @@
+8033c27554a288e90fae3b2cf05c4b95 *DESCRIPTION
+1a6cfc45db3b6ba0054ad3d180ddd77d *NAMESPACE
+f3e81af9279252f6b14ce85e88150980 *NEWS
+f86793dd7cf70172573673596bf489de *R/power.R
+973ffe80ad6166f80bca8c7f984bf3ec *R/power_2stage.R
+adad35cde9b014f381c585f2c964fd17 *R/power_2stage_Bf.R
+d714412b850b4a815c2a5d46ce452a53 *R/power_2stage_KM.R
+72f87df2e0df0c154e529e5b064c6ff6 *R/ss2x2.R
+b1c739196c860c6c1f43d506eefcc78b *man/power.2stage.Bf.Rd
+697e855a919f756eecd2083548621cce *man/power.2stage.KM.Rd
+3699e19c34c4337063a4cf39af8accb9 *man/power.2stage.Rd

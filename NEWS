@@ -1,0 +1,35 @@
+Version 0.0-06
+2014-01-02 
+   - Examples adapted to to complain with CRAN policy "Examples should run for 
+     no more than a few seconds each"
+     Attention! Number of sims are too low to have meaningfull results.
+     Minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'.
+Version 0.0-05
+2013-12-27 
+   - First attempt to release via CRAN
+Version 0.0-04
+2013-09-12 not released, internal version only
+   - Function power2.2stage() renamed to power.2stage.KM()
+   - Arguments in power.2stage.KM() omitted which are not necessary for
+     the TSD's described in Karalis & Macheras and in Karalis (see references).
+   - Default method in power.2stage.KM() shifted to "C".
+   - Function power.2stage.Bf() implemented which evaluates a 2-stage design
+     derived from Potvin method 'B' with a futility criterion for the PE
+     of stage 1.
+Version 0.0-03
+2013-09-03 released to alpha testers
+   - function power2.2stage() implemented which uses PE and MSE of stage 1
+     also for the power calculation steps if usePE=TRUE
+Version 0.0-02
+2013-07-10 released to alpha testers
+   - Default for npct argument changed to c(0.05, 0.5, 0.95) in accordance
+     with the Potvin papers.
+   - Cases with n(total)>Nmax now counted at stage 1 since I feel this is more
+     logical.
+   - More checks of input added (THX to Helmut Schuetz).
+   - Bug in output removed claiming that sample size is estimated with PE 
+     & mse from stage 1 even if argument usePE=FALSE (THX to Helmut).
+   - Internally stage vector introduced and output based on that.
+version 0.0-01
+2013-07-09
+   - First release to alpha testers
