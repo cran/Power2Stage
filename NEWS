@@ -1,7 +1,12 @@
+Version 0.0-07
+2014-02-13
+   - Maintenance release to reflect the changes in PowerTOST V1.1-10.
+   - Contains now the function power.2stage.GS() for non-adaptive group
+     sequential (2-stage) BE studies.
 Version 0.0-06
 2014-01-02 
    - Examples adapted to to complain with CRAN policy "Examples should run for 
-     no more than a few seconds each"
+     no more than a few seconds each". Few means below 5 sec as I learned.
      Attention! Number of sims are too low to have meaningfull results.
      Minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'.
 Version 0.0-05
@@ -11,7 +16,8 @@ Version 0.0-04
 2013-09-12 not released, internal version only
    - Function power2.2stage() renamed to power.2stage.KM()
    - Arguments in power.2stage.KM() omitted which are not necessary for
-     the TSD's described in Karalis & Macheras and in Karalis (see references).
+     the TSD's described in the Karalis & Macheras and in Karalis papers 
+     (see references).
    - Default method in power.2stage.KM() shifted to "C".
    - Function power.2stage.Bf() implemented which evaluates a 2-stage design
      derived from Potvin method 'B' with a futility criterion for the PE

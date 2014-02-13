@@ -19,7 +19,8 @@ power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294),
 \arguments{
   \item{method}{
 Decision schemes according to Potvin et.al. Default is "B". \cr
-Potvin method D can be obtained by choosing "C" but setting \code{alpha=c(0.028,0.028)}.
+Potvin method D can be obtained by choosing "C" but setting 
+\code{alpha=c(0.028,0.028)}.
 }
   \item{alpha0}{
 Alpha value for the first step(s) in Potvin C, the power inspection
@@ -45,13 +46,15 @@ Power threshold in the first step of Potvin "C" and
 power to achieve in the sample size estimation step.
 }
 \item{pmethod}{
-Power calculation method, also to be used in the sample size estimation for stage 2.\cr 
+Power calculation method, also to be used in the sample size estimation for 
+stage 2.\cr 
 Implemented are "nct" = approximate calculations via non-central t-distribution 
 and "exact" = exact calculations via Owen's Q.\cr
 Defaults to "nct" for speed reasons in the sample size estimation step.
 }
   \item{usePE}{
-If \code{TRUE} the sample size estimation step is done with PE and mse of stage 1.\cr
+If \code{TRUE} the sample size estimation step is done with PE and mse of 
+stage 1.\cr
 Defaults to \code{FALSE} in wich case the sample size is estimated with GMR and 
 mse of stage 1 (analogous to Potvin et. al.).\cr
 The power inspection steps in the Potvin methods are always done with the
@@ -98,9 +101,12 @@ of the simulation steps.
 }
 }
 \details{
-The calculations follow in principle the simulations as described in Potvin et al.\cr
+The calculations follow in principle the simulations as described in 
+Potvin et al.\cr
+The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics pe1, mse1 and pe2, SS2 are
-simulated via their associated distributions (normal and chi-squared distri's).
+simulated via their associated distributions (normal and chi-squared 
+distri's).
 }
 \value{
 Returns a list with all the input arguments and results as components.\cr
@@ -121,6 +127,10 @@ Montague TH et al.\cr
 "Additional results for 'Sequential design approaches for bio-equivalence studies 
 with crossover designs'"\cr
 Pharmaceut. Statist. 11(1), 8-13 (2011)
+
+Fuglsang A\cr
+"Controlling type I errors for two-stage bioequivalence study designs"\cr
+Clinical Research and Regulatory Affairs 28(4), 100-105 (2011)
 
 Fuglsang A\cr
 "Sequential Bioequivalence Trial Designs with Increased Power and 

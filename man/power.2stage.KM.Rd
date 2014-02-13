@@ -98,6 +98,7 @@ of the simulation steps.
 \details{
 The calculations follow in principle the simulations as described in Potvin 
 et. al.\cr
+The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics pe1, mse1 and pe2, SS2 
 are simulated via their associated distributions 
 (normal and chi-squared distribution's).\cr\cr
@@ -138,8 +139,8 @@ D. Labes
 }
 \note{
 The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee if 
-you simulate for 'alpha' with 1E6 (1 Mio) sims .
+(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee 
+or a cigarette if you simulate for 'alpha' with 1E6 (1 Mio) sims .
 }
 \examples{
 # using all the defaults

@@ -191,6 +191,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     ow    <- options("warn")
     options(warn=-1)
     m2    <- ifelse(n2>0, rnorm(n=nsim2, mean=mlog, sd=sqrt(mse*bk/n2)), 0)
+    # ??? (n2-2) cancels out! 
     SS2   <- ifelse(n2>2, (n2-2)*mse*rchisq(n=nsim2, df=n2-2)/(n2-2), 0)
     # reset options
     options(ow) 

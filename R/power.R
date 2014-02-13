@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # Author: dlabes
 #------------------------------------------------------------------------------
-# from code of power (package PowerTOST)
+
 #------------------------------------------------------------------------------
 # helper function to allow partial match of the method
 .powerMethod <- function(method){
@@ -31,20 +31,27 @@
   # is lower then the lower integration limit!
   # SAS OwenQ gives missings if b or a are negative!
   
+  # 0/0 -> NaN in case diffm=ltheta1 or diffm=ltheta2
+  # and se=0!
   delta1 <- (diffm-ltheta1)/(se*sqrt(bk/n))
   delta2 <- (diffm-ltheta2)/(se*sqrt(bk/n))
+  # is this correct?
+  delta1[is.nan(delta1)] <- 0
+  delta2[is.nan(delta2)] <- 0
   # R is infinite in case of alpha=0.5
-  R      <- (delta1-delta2)*sqrt(df)/(2.*abs(tval))
+  R <- (delta1-delta2)*sqrt(df)/(2.*abs(tval))
+  # in case of se=0 it results: delta1=Inf, delta2=inf if diffm>ltheta2
+  # Inf - Inf is NaN
+  R[is.nan(R)] <- 0
   
   # to avoid numerical errors in OwensQ implementation
-  if (df[1]>50000) { 
-    # Joulious formula (57) or (67), normal approximation
+  if (min(df)>10000) { 
+    # Joulious formula (57) or (67), large sample normal approximation
     p1 <- pnorm( (abs(delta1)-tval), lower.tail = TRUE)
     p2 <- pnorm( (abs(delta2)-tval), lower.tail = TRUE)
-		
-    return(p1 + p2 -1.)
+    return(p1 + p2 - 1.)
   }
-  if (df[1]>10000 & df[1]<=50000) {
+  if (min(df)>=5000 & min(df)<=10000) {
     # approximation via non-central t-distribution
     return(.approx.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk))
   }
@@ -64,7 +71,10 @@
     p1[i] <- OwensQ(ddf,  ttt, delta1[i], 0, R[i])
     p2[i] <- OwensQ(ddf, -ttt, delta2[i], 0, R[i])
   }
-  return( p2-p1 )
+  pow <- p2-p1
+  # due to numeric inaccuracies
+  pow[pow<0] <- 0
+  return( pow )
 }
 #------------------------------------------------------------------------------
 # 'raw' approximate power function without any error checks, 
@@ -74,9 +84,15 @@
 		                           se, n, df, bk=2)
 {
   tval <- qt(1 - alpha, df, lower.tail = TRUE, log.p = FALSE)
+  
+  # 0/0 -> NaN in case diffm=ltheta1 or diffm=ltheta2
+  # and se=0!
   delta1 <- (diffm-ltheta1)/(se*sqrt(bk/n))
   delta2 <- (diffm-ltheta2)/(se*sqrt(bk/n))
-	
+  # is this correct?
+  delta1[is.nan(delta1)] <- 0
+  delta2[is.nan(delta2)] <- 0
+  
   pow <- pt(-tval, df, ncp=delta2)-pt(tval, df, ncp=delta1)
   pow[pow<0] <- 0 # this is to avoid neg. power due to approx. (vector form)
   
@@ -84,22 +100,29 @@
 }
 #------------------------------------------------------------------------------
 # 'raw' power function without any error checks, 
-# approximation based on 'shifted' central t distribution
+# approximation based on central 'shifted' t distribution
 # according to Chow, Liu "Design and Analysis of Bioavailability ..."
 # Chapter 9.6 and implemented in PASS 2008
+# where does this all came from?
 .approx2.power.TOST <- function(alpha=0.05, ltheta1, ltheta2, diffm, 
                                 se, n, df, bk=2)
 {
 	tval   <- qt(1 - alpha, df, lower.tail = TRUE)
-  delta1 <- (diffm-ltheta1)/(se*sqrt(bk/n))
+	# 0/0 -> NaN in case diffm=ltheta1 or diffm=ltheta2
+	# and se=0!
+	delta1 <- (diffm-ltheta1)/(se*sqrt(bk/n))
 	delta2 <- (diffm-ltheta2)/(se*sqrt(bk/n))
+	# is this correct?
+	delta1[is.nan(delta1)] <- 0
+	delta2[is.nan(delta2)] <- 0
 	
 	pow <- pt(-tval-delta2,df) - pt(tval-delta1,df)
 	pow[pow<0] <- 0 # this is to avoid neg. power due to approx. (vector form)
 	
 	return(pow)
 }
-# function for merging the various power calculation methods
+#------------------------------------------------------------------------------
+# function for merging the various power calculations
 .calc.power <- function(alpha=0.05, ltheta1, ltheta2, diffm, se, n, df, bk, 
                         method="exact")
 { 

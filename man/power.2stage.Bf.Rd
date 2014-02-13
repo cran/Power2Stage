@@ -97,9 +97,12 @@ of the simulation steps.
 }
 }
 \details{
-The calculations follow in principle the simulations as described in Potvin et al.\cr
+The calculations follow in principle the simulations as described in Potvin 
+et al.\cr
+The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics pe1, mse1 and pe2, SS2 are
-simulated via their associated distributions (normal and chi-squared distri's).
+simulated via their associated distributions (normal and chi-squared 
+distri's).
 }
 \value{
 Returns a list with all the input arguments and results as components.\cr
@@ -116,11 +119,6 @@ Potvin D et.al.\cr
 "Sequential design approaches for bioequivalence studies with 
 crossover designs"\cr
 Pharmaceut. Statist. 7(4), 245-62 (2008)
-
-Montague TH et al.\cr
-"Additional results for 'Sequential design approaches for bio-equivalence studies 
-with crossover designs'"\cr
-Pharmaceut. Statist. 11(1), 8-13 (2011)
 }
 \author{
 D. Labes
