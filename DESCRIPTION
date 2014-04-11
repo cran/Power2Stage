@@ -2,8 +2,8 @@ Package: Power2Stage
 Type: Package
 Title: Power and Sample size distribution of 2-stage BE studies via
         simulations
-Version: 0.0-7
-Date: 2014-02-13
+Version: 0.0-8
+Date: 2014-04-11
 Authors@R: c(person("Detlew", "Labes", role = c("aut","cre"), email =
                     "DetlewLabes@gmx.de"),
              person("Helmut", "Schuetz", role = c("ctb"), email =
@@ -24,10 +24,10 @@ ByteCompile: yes
 License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
-Packaged: 2014-02-13 14:23:50 UTC; dlabes
+Packaged: 2014-04-11 08:53:01 UTC; dlabes
 Author: Detlew Labes [aut, cre],
   Helmut Schuetz [ctb]
 Maintainer: Detlew Labes <DetlewLabes@gmx.de>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-02-13 16:24:16
+Date/Publication: 2014-04-11 11:08:51

@@ -21,11 +21,12 @@ power.2stage.KM(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.0294),
 \arguments{
   \item{method}{
 Decision schemes according to Potvin et.al.\cr
-Default is "C" aka TSD in the paper of Karalis&Macheras.\cr
+Default is "C" aka TSD in the paper of Karalis&Macheras if setting
+\code{alpha=c(0.0294,0.0294)}.\cr
 TSD-1 of the paper of Karalis can be obtained by choosing "C" but setting 
 \code{alpha=c(0.028,0.028)}.\cr
 TSD-2 of the paper of Karalis can be obtained by choosing "B" and setting  
-\code{alpha=c(0.028,0.028)}.\cr
+\code{alpha=c(0.0294,0.0294)}.\cr
 }
   \item{alpha0}{
 Alpha value for the first step(s) in Potvin C aka TSD of Karalis&Macheras

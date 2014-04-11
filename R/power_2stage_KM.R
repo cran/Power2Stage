@@ -90,16 +90,18 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     BE[is.na(BE)] <- BE0
     rm(BE0)
   }
-  # method "B" or power<=0.8 in method "C"
-  # calculate power for alpha=alpha[1]
+  # method "B" or power<=0.8 in method "C":
+  # evaluate BE (CI) with alpha=alpha1
   mses_tmp <- mses[is.na(BE)]
   pes_tmp  <- pes[is.na(BE)]
   BE1 <- rep.int(NA, times=length(mses_tmp))
-  # calculate CI for alpha=alpha1
   hw    <- tval*sqrt(Cfact*mses_tmp)
   lower <- pes_tmp - hw
   upper <- pes_tmp + hw
+  rm(hw)
   BE1   <- lower>=ltheta1 & upper<=ltheta2
+  # take care of memory
+  rm(lower, upper)
   if (method=="C"){
     #if BE met -> PASS stop
     #if not BE -> goto sample size estimation i.e flag BE1 as NA
@@ -107,19 +109,21 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   } else { 
     # method B
     # evaluate power at alpha[1] using PE and mse of stage 1
-    pwr <- mapply(.calc.power, diffm = pes, se = sqrt(mses), 
+    pwr <- mapply(.calc.power, diffm = pes_tmp, se = sqrt(mses_tmp), 
                   MoreArgs = list(alpha = alpha[1], ltheta1 = ltheta1, 
                                   ltheta2 = ltheta2, n = n1, df = df, bk = bk, 
                                   method = pmethod))
     # if BE met then decide BE regardless of power
     # if not BE and power<0.8 then goto stage 2
+    #browser()
     BE1[ !BE1 & pwr<targetpower ] <- NA 
+    # take care of memory
+    rm(pwr)
   }
   # combine 'stage 0' from method C and stage 1
   BE[is.na(BE)] <- BE1
-  # take care of memory
-  # done with them
-  rm(BE1, hw, lower, upper)
+  # take care of memory, done with stage 1
+  rm(BE1)
   
   if(print & details){
     cat(" - Time consumed (min):\n")
@@ -153,14 +157,12 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     # sample size function returns Inf if pe1 is outside acceptance range
     nt <- mapply(FUN=.sampleN.2x2, mse=mses_tmp, ltheta0=pes_tmp, 
                  MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-                               ltheta1=ltheta1, ltheta2=ltheta2,
-                               method=pmethod))
+                               ltheta1=ltheta1, ltheta2=ltheta2, method=pmethod))
 #      cat("\nSummary of n(total)\n")
 #      print(summary(nt))
 #      res_n <- data.frame(pe=head(pes_tmp),mse=head(mses_tmp),nt=head(nt))
 #      print(res_n)
     n2  <- ifelse(nt>n1, nt - n1, 0)
-    #n2  <- ifelse(n2>100000, 100000, n2) # may not necessary
     
     if(print & details){
       cat("Time consumed (min):\n")
@@ -170,7 +172,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     # ntotal = n1 reasonable?
     if (is.finite(Nmax) | any(!is.finite(nt))){
       # sample size may return Inf if PE is used in ss estimation
-      # in that case we stay with stage 1
+      # in that case we stay with stage 1 result
       BE2[!is.finite(n2) | (n1+n2)>Nmax] <- FALSE
       # and we are counting these for stage 1
       s2[BE2==FALSE]  <- 1

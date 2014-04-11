@@ -1,3 +1,9 @@
+Version 0.0-08
+2014-04-11
+   - Bug in power.2stage.KM() removed if using method="B" (Karalis TSD-2).
+     Thanks again and again to Helmut Schuetz!
+   - Man page of power.2stage.KM() changed to the correct definition of
+     the Karalis/Macheras TSD or Karalis TSD-1, TSD-2 respectively.
 Version 0.0-07
 2014-02-13
    - Maintenance release to reflect the changes in PowerTOST V1.1-10.
