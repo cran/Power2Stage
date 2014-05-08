@@ -6,6 +6,7 @@ export(
     , power.2stage.KM
     , power.2stage.Bf
     , power.2stage.GS
+    , power.2stage.p
 )         
 
 # Import all packages listed as Imports or Depends

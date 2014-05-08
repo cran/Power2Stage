@@ -22,7 +22,7 @@
 # in case of multiplicative model:
 # diffm=log(null ratio), theta1=log(lower BE limit), theta2=log(upper BE limit)
 # in case of additive model:
-# diffm=1-null ratio, theta1=lower BE limit-1, theta2=upper BE limit -1
+# diffm=1-null ratio, ltheta1=lower BE limit-1, ltheta2=upper BE limit -1
 .power.TOST <- function(alpha=0.05, ltheta1, ltheta2, diffm, se, n, df, bk=2)
 {
   tval   <- qt(1 - alpha, df, lower.tail = TRUE)
@@ -126,16 +126,14 @@
 .calc.power <- function(alpha=0.05, ltheta1, ltheta2, diffm, se, n, df, bk, 
                         method="exact")
 { 
-  pow <- switch(
-      method,
+  pow <- switch(method,
       exact=.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
       owenq=.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
       nct=  .approx.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
-      noncentral=.approx.power.TOST(alpha, ltheta1, ltheta2, diffm, 
-                                    se, n, df, bk),
+      noncentral=.approx.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
       shifted=.approx2.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
       central=.approx2.power.TOST(alpha, ltheta1, ltheta2, diffm, se, n, df, bk),
       stop("Method '", method, "' unknown!\n", call.=TRUE)
-  ) 
+      )
   return(pow)
 }

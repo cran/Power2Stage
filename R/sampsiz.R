@@ -1,10 +1,10 @@
 # ----- helper function ----------------------------------------------------
-# Sample size for a desired power, large sample approx., 2x2 crossover
+# Sample size for a desired power, large sample approx.
 # 
 # author D. Labes
 # bk = design constant, see known.designs()
-.sampleN0.2x2 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
-                          se, steps=2, bk=2, diffmthreshold=0.04)
+.sampleN0 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
+                          se, steps=2, bk=4, diffmthreshold=0.04)
 {
   
   z1 <- qnorm(1-alpha)
@@ -38,16 +38,16 @@
 }
 
 # -------------------------------------------------------------------------
-# sample size function for 2x2 without all the overhead
-# used in power.2stage()
+# sample size function without all the overhead
+# for 2x2 crossover or 2-group parallel
 # power via nct approximation or exact
 #
 # author D. Labes
 # -------------------------------------------------------------------------
 
-.sampleN.2x2 <- function(alpha=0.05, targetpower=0.8, ltheta0, 
-                         ltheta1=log(0.8), ltheta2=log(1.25), mse,
-                         method=c("nct","exact"))
+.sampleN <- function(alpha=0.05, targetpower=0.8, ltheta0, 
+                     ltheta1=log(0.8), ltheta2=log(1.25), mse, bk=2,
+                     method=c("nct","exact"))
 {
   # return 'Inf' if ltheta0 not between or very near to ltheta1, ltheta2
   if ((ltheta0-ltheta1)<1.25e-5 | (ltheta2-ltheta0)<1.25e-5) {
@@ -56,21 +56,18 @@
     return(Inf)
   }
 
-  # design characteristics of the 2x2x2
+  # design characteristics for 2-group parallel and 2x2 crossover design
   # df for the design as an unevaluated expression
   dfe   <- parse(text="n-2", srcfile=NULL)
   steps <- 2     # stepsize for sample size search
-  bk    <- 2     # get design constant
   nmin  <- 4     # minimum n
   
-  # check the method giving
-  method <- match.arg(method)
   # log transformation assumed
   se     <- sqrt(mse)
   diffm  <- ltheta0
   
   # start value from large sample approx. (hidden func.)
-  n  <- .sampleN0.2x2(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
+  n  <- .sampleN0(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   if (n<nmin) n <- nmin
   df <- eval(dfe)
   pow <- .calc.power(alpha, ltheta1, ltheta2, diffm, se, n, df, bk, method)

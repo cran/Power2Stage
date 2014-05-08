@@ -1,7 +1,7 @@
 \name{power.2stage.KM}
 \alias{power.2stage.KM}
 \title{
-Power calculation of adaptive 2-stage BE studies 
+Power calculation of adaptive 2-stage BE studies (2x2 crossover)
 (variant of power.2stage to obtain the results of Karalis / Macheras)
 }
 \description{
@@ -119,21 +119,21 @@ The results are in the components:
 \item{nperc}{Percentiles of the distribution of n(total).}
 }
 \references{
-Potvin D et.al.\cr
+Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with crossover designs"\cr
 Pharmaceut. Statist. 7(4), 245-62 (2008)
 
 Karalis V and P Macheras\cr
 "An Insight into the Properties of a Two-Stage Design in Bioequivalence Studies"\cr
-Pharm. Res. 30(7) 1824-35 (2013), Epub 2013 April 9
+Pharm. Res. 30(7) 1824-35 (2013), Epub 2013 April 9.
 
 Karalis V\cr
 "The role of the upper sample size limit in two-stage bioequivalence designs"\cr
-Int. J. Pharmaceut. (2013) in press
+Int J Pharm. 2013 Nov 1;456(1):87-94. Epub 2013 Aug 14.
 
 Fuglsang A\cr
 "Futility Rules in Bioequivalence Trials with Sequential Designs"\cr
-AAPS J. 2013 Nov 12. (Epub ahead of print)
+AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12.
 }
 \author{
 D. Labes
@@ -145,7 +145,7 @@ or a cigarette if you simulate for 'alpha' with 1E6 (1 Mio) sims .
 }
 \examples{
 # using all the defaults
-# but too low number of sims to complain with CRAN policy 
+# but too low number of sims to complain with the CRAN policy: 
 # "check time only a few seconds per example"
 # minimum number of sims should be 1E5 for power, 1E6 sims for 'alpha'
 power.2stage.KM(n1=16, CV=0.2, nsims=1E4)

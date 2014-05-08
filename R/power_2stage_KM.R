@@ -155,9 +155,10 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     ptms <- proc.time()
     # use mse1 & pe1 as described in Karalis/Macheras
     # sample size function returns Inf if pe1 is outside acceptance range
-    nt <- mapply(FUN=.sampleN.2x2, mse=mses_tmp, ltheta0=pes_tmp, 
+    nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
                  MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-                               ltheta1=ltheta1, ltheta2=ltheta2, method=pmethod))
+                               ltheta1=ltheta1, ltheta2=ltheta2, 
+                               method=pmethod, bk=bk))
 #      cat("\nSummary of n(total)\n")
 #      print(summary(nt))
 #      res_n <- data.frame(pe=head(pes_tmp),mse=head(mses_tmp),nt=head(nt))

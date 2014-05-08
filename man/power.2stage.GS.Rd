@@ -35,12 +35,12 @@ Lower bioequivalence limit. Defaults to 1.25.
 }
   \item{fCrit}{
 Futility criterion.\cr
-If set to "PE" the study stops after stage 1 if not BE and if the point estimator
+If set to \code{"PE"} the study stops after stage 1 if not BE and if the point estimator
 of stage 1 evaluation is outside the range defined in the next two argumenmts.\cr
-If set to "CI" the study stops after stage 1 if not BE and if the confidence
+If set to \code{"CI"} the study stops after stage 1 if not BE and if the confidence
 interval of stage 1 evaluation is outside the range defined in the next 
 two argumenmts.\cr
-Defaults to "PE"
+Defaults to \code{"PE"}.
 }
   \item{fClower}{
 Lower limit of the futility criterion.\cr
@@ -72,8 +72,8 @@ of the simulation steps.
 }
 \details{
 The calculations follow in principle the simulations as described in 
-Potvin et al. for adaptive designs, but with no interim power and pre-specified
-number of subjects in stage 2.\cr
+Potvin et al. for adaptive designs, but with no interim power inspection and 
+pre-specified (fixed) number of subjects in stage 2.\cr
 The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics pe1, mse1 and pe2, SS2 are
 simulated via their associated distributions (normal and chi-squared 
@@ -109,11 +109,11 @@ The code is reasonable fast. 1E6 sims take ~ 1 sec on my machine.
 Even 1E7 sims are possible without meanwhile too much beer :-)).
 }
 \section{Warning }{
-This function has to be considered as experimental since it was by no means 
+This function has to be considered as 'experimental' since it was by no means 
 checked and thoroughly tested.
 }
 \seealso{
-\code{\link{power.2stage}} for adptive sequential designs.
+\code{\link{power.2stage}} and \code{\link{power.2stage.p}} for adptive sequential designs.
 }
 \examples{
 # using the Pocock alpha settings and the point estimator futility rule

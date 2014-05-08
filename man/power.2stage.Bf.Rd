@@ -1,8 +1,8 @@
 \name{power.2stage.Bf}
 \alias{power.2stage.Bf}
 \title{
-Power calculation of adaptive 2-stage BE studies with a futility criterion
-for the point estimator
+Power calculation of adaptive 2-stage BE studies (2x2 crossover) with a 
+futility criterion for the point estimator
 }
 \description{
 This function calculates the empirical power of 2-stage BE studies according
@@ -115,7 +115,7 @@ The results are in the components:
 \item{nperc}{Percentiles of the distribution of n(total).}
 }
 \references{
-Potvin D et.al.\cr
+Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with 
 crossover designs"\cr
 Pharmaceut. Statist. 7(4), 245-62 (2008)

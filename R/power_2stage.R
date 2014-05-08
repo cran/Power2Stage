@@ -145,16 +145,16 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     if (usePE){
       # use mse1 & pe1 like in the paper of Karalis/Macheras
       # sample size function returns Inf if pe1 is outside acceptance range
-      nt <- mapply(FUN=.sampleN.2x2, mse=mses_tmp, ltheta0=pes_tmp, 
+      nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
                                  ltheta1=ltheta1, ltheta2=ltheta2,
-                                 method=pmethod))
+                                 method=pmethod, bk=2))
     } else {
       # use mse1 & GMR to calculate sample size (original Potvin)
-      nt <- mapply(FUN=.sampleN.2x2, mse=mses_tmp, 
+      nt <- mapply(FUN=.sampleN, mse=mses_tmp, 
                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-                                 method=pmethod))
+                                 method=pmethod, bk=2))
     }
     
     n2  <- ifelse(nt>n1, nt - n1, 0)
