@@ -6,12 +6,13 @@
 # author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("C:/Users/dlabes/workspace/PowerTOST/R/ss2x2.R")
+# source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
 # source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
 
 
 power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
-                         n1, GMR, CV, targetpower=0.8, pmethod=c("nct","exact"),
+                         n1, GMR, CV, targetpower=0.8, 
+                         pmethod=c("nct","exact", "shifted"),
                          usePE=FALSE, Nmax=Inf, theta0, theta1, theta2,  
                          npct=c(0.05, 0.5, 0.95), nsims=1e5, setseed=TRUE, 
                          print=TRUE, details=TRUE)

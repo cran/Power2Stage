@@ -37,6 +37,34 @@
   return(n0)
 }
 
+.sampleN0_3 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
+                        se, steps=2, bk=2)
+{
+  # transform to limits symmetric around zero (if they are not)
+  locc    <- (ltheta1+ltheta2)/2
+  diffm   <- diffm - locc
+  ltheta1 <- ltheta1 - locc
+  ltheta2 <- -ltheta1
+  delta   <- abs((ltheta2-ltheta1)/2)
+  
+  z1   <- qnorm(1-alpha)
+  beta <- 1-targetpower
+  
+  c  <- abs(diffm/delta)
+  # probability for second normal quantil
+  # if c<0.2 is in general a good choice needs to be tested
+  #                        Zhang's f. if 7.06 is general needs to be tested
+  p2 <- ifelse(c<0.2, 1-(1-0.5*exp(-7.06*c))*beta, 1-beta)
+  z2 <- qnorm(p2)
+  # difference for denominator
+  dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
+  # make an even multiple of steps (=2 in case of 2x2 cross-over)
+  n0 <- steps*trunc(n0/steps)
+  #browser()
+  return(n0)
+}
+
 # -------------------------------------------------------------------------
 # sample size function without all the overhead
 # for 2x2 crossover or 2-group parallel
@@ -45,9 +73,8 @@
 # author D. Labes
 # -------------------------------------------------------------------------
 
-.sampleN <- function(alpha=0.05, targetpower=0.8, ltheta0, 
-                     ltheta1=log(0.8), ltheta2=log(1.25), mse, bk=2,
-                     method=c("nct","exact"))
+.sampleN <- function(alpha=0.05, targetpower=0.8, ltheta0, ltheta1=log(0.8), 
+                     ltheta2=log(1.25), mse, bk=2, method="nct")
 {
   # return 'Inf' if ltheta0 not between or very near to ltheta1, ltheta2
   if ((ltheta0-ltheta1)<1.25e-5 | (ltheta2-ltheta0)<1.25e-5) {
@@ -67,7 +94,7 @@
   diffm  <- ltheta0
   
   # start value from large sample approx. (hidden func.)
-  n  <- .sampleN0(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
+  n  <- .sampleN0_3(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   if (n<nmin) n <- nmin
   df <- eval(dfe)
   pow <- .calc.power(alpha, ltheta1, ltheta2, diffm, se, n, df, bk, method)

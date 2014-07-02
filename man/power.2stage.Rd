@@ -11,7 +11,8 @@ done with point estimator & mse of stage 1.
 }
 \usage{
 power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
-             n1, GMR, CV, targetpower = 0.8, pmethod = c("nct", "exact"),
+             n1, GMR, CV, targetpower = 0.8, 
+             pmethod = c("nct", "exact", "shifted"),
              usePE = FALSE, Nmax = Inf, theta0, theta1, theta2,  
              npct = c(0.05, 0.5, 0.95), nsims = 1e+05, setseed = TRUE, 
              print = TRUE, details = TRUE)
@@ -49,7 +50,8 @@ power to achieve in the sample size estimation step.
 Power calculation method, also to be used in the sample size estimation for 
 stage 2.\cr 
 Implemented are \code{"nct"} = approximate calculations via non-central 
-t-distribution and \code{"exact"} = exact calculations via Owen's Q.\cr
+t-distribution and \code{"exact"} = exact calculations via Owen's Q as well as
+the approximation via shifted central t-distribution, as used by Potvin et al.\cr
 Defaults to \code{"nct"} for speed reasons in the sample size estimation step.
 }
   \item{usePE}{

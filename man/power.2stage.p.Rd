@@ -5,9 +5,9 @@ Power calculation of adaptive 2-stage BE studies with 2-group parallel design
 }
 \description{
 This function calculates the 'empirical' power of 2-stage BE studies according
-to A. fuglsang via simulations. The Potvin decision schemes are modified to 
+to A. Fuglsang via simulations. The Potvin decision schemes are modified to 
 include a futility criterion Nmax and to allow the sample size estimation 
-step to be done with point estimator & mse of stage 1.
+step to be done with point estimator & variabilities from stage 1.
 }
 \usage{
 power.2stage.p(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
