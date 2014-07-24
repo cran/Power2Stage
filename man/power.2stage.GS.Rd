@@ -106,11 +106,12 @@ D. Labes
 }
 \note{
 The code is reasonable fast. 1E6 sims take ~ 1 sec on my machine.
-Even 1E7 sims are possible without meanwhile too much beer :-)).
+Even 1E7 sims are possible without meanwhile too much beer :-)).\cr\cr
+To calculate without a futility criterion choose \code{fCrit="PE"} and set 
+\code{fClower=0, fCupper=Inf}.
 }
 \section{Warning }{
-This function has to be considered as 'experimental' since it was by no means 
-checked and thoroughly tested.
+This function has to be considered as 'experimental' since it was not thoroughly tested.
 }
 \seealso{
 \code{\link{power.2stage}} and \code{\link{power.2stage.p}} for adptive sequential designs.

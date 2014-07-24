@@ -1,8 +1,12 @@
 Version 0.1-03
 2014-07-02
+   - Bug in power.2stage.GS() removed which prevented the convergence of power
+     values with increasing number of sims
+Version 0.1-03
+2014-07-02
    - Power calculation method "shifted" added in power.2stage() to the aim 
      of comparison to Potvin et al.
-   - Internal change of start value of sample size search in to avoid 
+   - Internal change of start value of sample size search to avoid 
      failed searches if variability is high and theta0 is near 1.
 Version 0.1-02
 not released to the public

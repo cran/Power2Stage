@@ -7,7 +7,7 @@
 # author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("C:/Users/dlabes/workspace/PowerTOST/R/ss2x2.R")
+# source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
 # source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
 
 

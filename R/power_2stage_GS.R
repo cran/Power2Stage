@@ -12,9 +12,9 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")
   
-  if (missing(n)) stop("Number of subjects in the two stages must be given.")
+  if (missing(n))   stop("Number of subjects in the two stages must be given.")
   if (length(n)!=2) stop("n must be a vector of length 2.")
-  if (any(n<2))  stop("Number of subjects in stages must be at least 2.")
+  if (any(n<=2))    stop("Number of subjects in stages must be >2.")
   
   if (missing(theta1) & missing(theta2))  theta1 <- 0.8
   if (!missing(theta1) & missing(theta2)) theta2 <- 1/theta1
@@ -24,6 +24,7 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
 
   fCrit <- match.arg(fCrit)
   if (missing(fClower) & missing(fCupper))  fClower <- theta1
+  if (fClower<0) fClower <- 0 # silently correct it
   if (missing(fClower) & !missing(fCupper)) fClower <- 1/fCupper
   if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
 
@@ -101,12 +102,12 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
     SS1   <- (n[1]-2)*mses[s2==TRUE]
     # --- simulate stage 2 data
     Cfact <- bk/n[2]
-    df    <- n[2]-2
     sdm   <- sqrt(mse*Cfact)
     # simulate point est. via normal distribution
     m2    <- rnorm(n=nsims2, mean=mlog, sd=sdm)
     # simulate mse/SS2 via chi-squared distribution
-    SS2   <- ifelse(n[2]>2, mse*rchisq(n=nsims2, df=df), 0)
+    SS2   <- 0
+    if(n[2]>2) SS2 <- mse*rchisq(n=nsims2, df=n[2]-2)
     # --- poole over stage 1 & stage 2 data
     # pool according to Potvin et al.
     ntot <- sum(n)
@@ -115,13 +116,14 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
     # The Canada guidance talks: "This method precludes the need for 
     # a stage effect in the model" -> setting SSmean to zero?
     SSmean <- (m1-m2)^2/(2/n[1]+2/n[2])
+    #SSmean <- 0
     # mean stage 1 + stage 2
     pe2 <- (n[1]*m1+n[2]*m2)/ntot
     # mse stage 1 + stage 2 with stage as covariate
     mse2   <- (SS1+SSmean+SS2)/df2
     # take care of memory
     rm(m1, m2, SS1, SS2, SSmean)
-    # calculate 1-2*lpha CI for stage 2 with alpha[2]
+    # calculate 1-2*alpha CI for stage 2 with alpha[2]
     hw    <- tval2*sqrt(mse2*bk/ntot)
     lower <- pe2 - hw
     upper <- pe2 + hw
