@@ -5,7 +5,7 @@ Power calculation of adaptive 2-stage BE studies with 2x2 crossover design
 }
 \description{
 This function calculates the empirical power of 2-stage BE studies according
-to Potvin et.al. via simulations. The Potvin methods are modified to include
+to Potvin et al. via simulations. The Potvin methods are modified to include
 a futility criterion Nmax and to allow the sample size estimation step to be 
 done with point estimator & mse of stage 1.
 }
@@ -137,11 +137,11 @@ Clinical Research and Regulatory Affairs 28(4), 100-105 (2011)
 Fuglsang A\cr
 "Sequential Bioequivalence Trial Designs with Increased Power and 
 Controlled Type I Error Rates"\cr
-AAPS J. 2013 Jul;15(3):659-61. Epub 2013 Mar 30.
+AAPS J. 2013 Jul; 15(3):659-61. Epub 2013 Mar 30.
 
 Fuglsang A\cr
 "Futility Rules in Bioequivalence Trials with Sequential Designs"\cr
-AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12.
+AAPS J. 2014 Jan; 16(1):79-82. Epub 2013 Nov 12.
 }
 \author{
 D. Labes

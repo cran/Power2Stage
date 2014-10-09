@@ -1,5 +1,11 @@
-Version 0.1-03
-2014-07-02
+Version 0.1-05
+2014-10-09
+   - power.2stage.Bf() reworked into the new function power.2stage.fC() to 
+     include Potvin method "C" and to include an additional futility criterion 
+     for the CI also. power.2stage.Bf() is depreciated and will not be contained 
+     in one of the next versions. Use power.2stage.fC() instead.
+Version 0.1-04
+2014-07-24
    - Bug in power.2stage.GS() removed which prevented the convergence of power
      values with increasing number of sims
 Version 0.1-03

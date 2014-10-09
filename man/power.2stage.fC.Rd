@@ -1,23 +1,34 @@
-\name{power.2stage.Bf}
-\alias{power.2stage.Bf}
+\name{power.2stage.fC}
+\alias{power.2stage.fC}
 \title{
 Power calculation of adaptive 2-stage BE studies (2x2 crossover) with a 
-futility criterion for the point estimator
+futility criterion for the point estimator or CI
 }
 \description{
 This function calculates the empirical power of 2-stage BE studies according
-to Potvin et al. Method B via simulations.\cr
-This function is depreciated and will not contained in the next version. 
-Use power.2stage.fC instead.
+to Potvin et al. Method B/C via simulations. The Potvin methods are modified to 
+include a futility criterion for the point estimator or for the CI and to 
+allow the sample size estimation step to be done with point estimator & mse 
+of stage 1.
 }
 \usage{
-power.2stage.Bf(alpha = c(0.0294, 0.0294), n1, CV, GMR, targetpower = 0.8, 
-                pmethod = c("nct", "exact"), usePE = FALSE, powerstep = TRUE, 
-                fPElower, fPEupper, theta0, theta1, theta2, 
-                npct = c(0.05, 0.5, 0.95), nsims = 1e+05, setseed = TRUE, 
-                print = TRUE, details = TRUE)
+power.2stage.fC(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
+                n1, CV, GMR, targetpower = 0.8, pmethod = c("nct", "exact"), 
+                usePE = FALSE, powerstep = TRUE, fCrit=c("PE","CI"), 
+                fClower, fCupper, theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
+                nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
 }
 \arguments{
+  \item{method}{
+Decision schemes according to Potvin et.al. Default is "B". \cr
+Potvin method D can be obtained by choosing "C" but setting 
+\code{alpha=c(0.028,0.028)}.
+}
+  \item{alpha0}{
+Alpha value for the first step(s) in Potvin C, the power inspection
+and BE decision if power > targetpower.\cr
+Defaults to 0.05.
+}
   \item{alpha}{
 Vector of the nominal alpha's for the two stages.\cr
 Defaults to the Pocock alpha setting \code{alpha=c(0.0294,0.0294)}.
@@ -48,18 +59,22 @@ Defaults to \code{FALSE} in wich case the sample size is estimated with
 (constant) GMR given as argument and mse of stage 1 (analogous to Potvin et. al.).
 }
   \item{powerstep}{
-If \code{TRUE} (the default) the interim power analysis step in the stage 1 
-evaluation will be done as described in Potvin et.al.\cr
-Setting this argument to \code{FALSE} will omit this step.
+If \code{TRUE} (the default) the interim power monitoring step in the stage 1 
+evaluation of method "B" will be done as described in Potvin et.al.\cr
+Setting this argument to \code{FALSE} will omit this step.\cr
+Has no effect if \code{method="C"} is choosen.
 }
-  \item{fPElower}{
-Lower futility limit for the PEof stage 1.\cr
-If the PE is outside \code{fPElower} ... \code{fPEupper} the study is stopped
+  \item{fCrit}{
+Futility criterion to use for PE or CI.
+}
+  \item{fClower}{
+Lower futility limit for the PE or CI of stage 1.\cr
+If the PE or CI is outside \code{fClower} ... \code{fCupper} the study is stopped
 with the result FAIL (not BE).\cr
-May be missing. Defaults then to 0.825.
+May be missing. Defaults then to 0.825 if \code{fCrit="PE"} or 0.9 if \code{fCrit="CI"}.
 }
-  \item{fPEupper}{
-Upper futility limit for the PE of stage 1.\cr
+  \item{fCupper}{
+Upper futility limit for the PE or CI of stage 1.\cr
 If missing it will be set to 1/fClower.
 }
   \item{theta0}{
@@ -129,18 +144,11 @@ The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
 you simulate for 'alpha' with 1 Mio (1E6) sims.
 }
 \seealso{
-\code{\link{power.2stage.fC}}, \code{\link{power.2stage}}
+\code{\link{power.2stage}}
 }
 \examples{
 # using all the defaults
 # but too low number of sims to complain with CRAN policy 
-# "examples check time a few seconds"
-power.2stage.Bf(CV=0.25, n1=24, nsims=1E4)
-#
-# slight alpha inflation using the O'Brian-Fleming nominal alpha settings
-# and small 'hidden pilot'
-\dontrun{
-# commented out to complain with CRAN policy "examples check time a few seconds"
-power.2stage.Bf(alpha=c(0.005, 0.048), CV=0.2, n1=12, theta0=1.25, nsims=1E6)
-}
+# "examples check time a few seconds" (a few means <5 sec)
+power.2stage.fC(CV=0.25, n1=24, nsims=1E4)
 }

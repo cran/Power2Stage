@@ -5,6 +5,7 @@ export(
       power.2stage
     , power.2stage.KM
     , power.2stage.Bf
+    , power.2stage.fC
     , power.2stage.GS
     , power.2stage.p
 )         
