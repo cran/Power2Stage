@@ -1,10 +1,42 @@
-# ----- helper function ----------------------------------------------------
+# ----- helper functions ---------------------------------------------------
 # Sample size for a desired power, large sample approx.
 # 
+# original 'large sample' sample size formula
+# author D. Labes
+.sampleN00 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
+                       se, steps=2, bk=2, diffmthreshold=0.04)
+{
+  
+  # return Inf if diffm outside
+  if ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5) {
+    # debug
+    # cat ("Inf returned for",exp(diffm),"\n")
+    return(Inf)
+  }
+    
+  z1 <- qnorm(1-alpha)
+  # value diffmthreshold=0.04 corresponds roughly to log(0.96)
+  # with lower values there are many steps around between 0.95 and 1
+  # in sampleN.TOST, but no longer used in sampleN.TOST
+  if (abs(diffm)>diffmthreshold) z2 <- qnorm(targetpower) else {
+    z2 <- qnorm(1-(1-targetpower)/2) # #1-beta/2 for diffm ~0 (log(theta0=1))
+    diffm <- 0
+  }
+  n01<-(bk/2)*((z1+z2)*(se*sqrt(2)/(diffm-ltheta1)))^2;
+  n02<-(bk/2)*((z1+z2)*(se*sqrt(2)/(diffm-ltheta2)))^2;
+  n0 <- pmax(n01,n02)
+  #browser()
+  # round up to next even >=
+  # seems Golkowski has used simple round
+  n0 <- steps*ceiling(n0/steps)
+  n0
+}
+
+# 'large sample' sample size with one additional step via t-distribution
 # author D. Labes
 # bk = design constant, see known.designs()
 .sampleN0 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
-                          se, steps=2, bk=4, diffmthreshold=0.04)
+                      se, steps=2, bk=2, diffmthreshold=0.04)
 {
   
   z1 <- qnorm(1-alpha)
@@ -37,6 +69,7 @@
   return(n0)
 }
 
+# variant of 'large sample' formula with 'smooth' transition from beta/2 to beta
 .sampleN0_3 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
                         se, steps=2, bk=2)
 {
@@ -96,6 +129,7 @@
   # start value from large sample approx. (hidden func.)
   n  <- .sampleN0_3(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   if (n<nmin) n <- nmin
+  if(method=="ls") return(n)
   df <- eval(dfe)
   pow <- .calc.power(alpha, ltheta1, ltheta2, diffm, se, n, df, bk, method)
   

@@ -23,14 +23,14 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   if (missing(theta0)) theta0 <- 0.95
 
   fCrit <- match.arg(fCrit)
-  if (missing(fClower) & missing(fCupper))  fClower <- theta1
+  if (missing(fClower) & missing(fCupper))  fClower <- 0 # no futility crit.
   if (fClower<0) fClower <- 0 # silently correct it
   if (missing(fClower) & !missing(fCupper)) fClower <- 1/fCupper
   if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
 
   
   if(print & details){
-    cat(nsims,"sims. Stage 1")
+    cat(nsims, "sims. Stage 1")
   }
   # start timer
   ptm  <- proc.time()
@@ -151,7 +151,7 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
       cat("\n")
     }
     cat("Group sequential (2-stage) crossover design\n")
-    cat("alpha (stage 1, stage 2)=", alpha[1], alpha[2], "\n")
+    cat("alpha (s1/s2) =", alpha[1], alpha[2], "\n")
     cat("CV= ",CV,"; n(stage 1, stage 2)= ", n[1]," " , n[2], "\n", sep="")
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
     if (fCrit=="PE"){
@@ -159,15 +159,15 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
     } else {
       cat("Futility criterion: CI outside", fClower,"...",fCupper, "\n")
     }
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
+    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1= ", res$pBE_s1,"\n", sep="")
-    cat("pct studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
+    cat("p(BE)    = ", res$pBE,"\n", sep="")
+    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
+    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
     cat("\n")
   } 
-  #what shall we return?
+
   if (print) return(invisible(res)) else return(res)
   
 } #end function

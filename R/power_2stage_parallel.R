@@ -311,8 +311,9 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
               theta0=exp(mlog), theta1=theta1, theta2=theta2, 
               usePE=usePE, Nmax=Nmax, nsims=nsims,
               # results 
-              pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims, 
-              pct_s2=100*length(BE[stage==2])/nsims, 
+              pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims,
+              # Dec 2014: meaning of pct_s2 changed
+              pct_s2=100*sum(ntot>n1)/nsims, 
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
   # output
   if (print) {
@@ -323,39 +324,42 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     }
     cat("2-group parallel 2-stage design\n")
     cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0= ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2)=", alpha[1], alpha[2], "\n")
-    cat("Futility criterion Nmax= ",Nmax,"\n", sep="")
+    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
+    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
+    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
     cat("CI's based on", ifelse(test=="welch","Welch's t-test",test),"\n")
     if(usePE) {
       cat("PE and variances of stage 1 in sample size est. used\n")
     } else {
-      cat("GMR=",GMR, "and variances of stage 1 in sample size est. used\n")}
+      cat("GMR=",GMR, "and variances of stage 1 in sample size est. used\n")
+    }
+    cat("Target power in power monitoring and sample size est. = ", 
+        targetpower,"\n",sep="")
     if (length(CV)==2){
-      cat("CVs= "); cat(CV,sep=", ")
-      cat("; n(stage 1)= ",n1,"; GMR= ",GMR, "\n", sep="")
+      cat("CVs = "); cat(CV,sep=", ")
+      cat("; n(stage 1) = ",n1,"; GMR = ",GMR, "\n", sep="")
     } else {
-      cat("CV= ",CV,"; ntot(stage 1)= ",n1,"; GMR= ",GMR, "\n", sep="")
+      cat("CV = ",CV,"; ntot(stage 1) = ",n1,"; GMR = ",GMR, "\n", sep="")
     }
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
+    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1= ", res$pBE_s1,"\n", sep="")
+    cat("p(BE)    = ", res$pBE,"\n", sep="")
+    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
     if (res$pct_s2>0.01){
-      cat("pct studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
+      cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
     } else {
-      cat("pct studies in stage 2= ", round(res$pct_s2,4), "%\n", sep="")
+      cat("Studies in stage 2 = ", round(res$pct_s2,4), "%\n", sep="")
     }
     cat("\nDistribution of n(total)\n")
-    cat("- mean (range)= ", round(res$nmean,1)," (", min(ntot)," ... ",
-        max(ntot),")\n", sep="")
+    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
+        res$nrange[2],")\n", sep="")
     cat("- percentiles\n")
     print(res$nperc)
     cat("\n")
   } 
-  #what shall we return?
+  
   if (print) return(invisible(res)) else return(res)
   
 } #end function

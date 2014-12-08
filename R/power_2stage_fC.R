@@ -12,7 +12,7 @@
 
 power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.0294), 
                             n1, CV, GMR, targetpower=0.8, pmethod=c("nct","exact"), 
-                            usePE=FALSE, powerstep=TRUE, fCrit=c("PE","CI"), 
+                            usePE=FALSE, powerstep=TRUE, min.n2=0, fCrit=c("PE","CI"), 
                             fClower, fCupper, theta0, theta1, theta2, 
                             npct=c(0.05, 0.5, 0.95), nsims=1e5, setseed=TRUE, 
                             print=TRUE, details=TRUE)
@@ -51,7 +51,14 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
 #  if (fClower<theta1 | fCupper>theta2){
 #    stop("Futility range for PE must be inside BE acceptance range!")
 #  }
-  
+
+  if(min.n2!=0 & min.n2<2) stop("min.n2 has to be at least +2.")
+  # make even (round up)
+  if( min.n2%%2 != 0) {
+    min.n2 <- min.n2 + min.n2%%2
+    message("min.n2 rounded to even", min.n2)
+  }
+
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
@@ -138,8 +145,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   } else {
     outside <- (lower > ln_fCupper) | (upper<ln_fClower)
   }
-  BE1 <- ifelse(outside,FALSE,BE1)
-  #browser()
+  BE1 <- ifelse(outside, FALSE, BE1)
   # combine BE and BE1
   BE[is.na(BE)] <- BE1
   # take care of memory, done with them
@@ -151,7 +157,6 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
     print(round((proc.time()-ptm)/60,3))
   }
 
-  # ------ Try to make all the stage 2 calculations without a loop
   # ------ sample size for stage 2 -----------------------------------------
   ntot     <- rep(n1, times=nsims)
   stage    <- rep(1, times=nsims)
@@ -189,9 +194,11 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
                                  method=pmethod, bk=2))
     }
-    
+    #browser()
     n2 <- ifelse(nt>n1, nt - n1, 0)
-
+    # assure a min.n2
+    n2 <- ifelse(n2<min.n2, min.n2, n2)
+    
     if(print & details){
       cat("Time consumed (min):\n")
       print(round((proc.time()-ptms)/60,2))
@@ -216,8 +223,6 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
       n2       <- n2[is.na(BE2)]
     }
     
-    # limit 100 thousand for ntotal
-    #n2 <- ifelse(n2+n1>100000, 100000-n1, n2)
     # ---------- stage 2 evaluation --------------------------------------
     m1    <- pes_tmp
     SS1   <- (n1-2)*mses_tmp
@@ -258,8 +263,9 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
               powerstep=powerstep, fCrit=fCrit,
               fCrange=c(fClower, fCupper), nsims=nsims,
               # results 
-              pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims, 
-              pct_s2=100*length(BE[stage==2])/nsims, 
+              pBE=sum(BE)/nsims, pBE_s1=sum(BE[ntot==n1])/nsims,
+              # dec 2014 meaning of pct_s2 changed
+              pct_s2=100*sum(ntot>n1)/nsims, 
               nmean=mean(ntot), nrange=range(ntot), 
               nperc=quantile(ntot, p=npct))
   # output
@@ -270,27 +276,31 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
       cat("\n")
     }
     cat("Method ",method,"f:", sep="")
-    if(method=="C") cat(" alpha0= ", alpha0, ",",sep="")
+    if(method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
     cat(" alpha (s1/s2)=", alpha[1], alpha[2], "\n")
     cat("Futility criterion for ", fCrit," = outside ", fClower, " ... ",
         fCupper, "\n", sep="")
-    cat("CV= ",CV,"; n(stage 1)= ",n1,"; GMR= ",GMR, "\n", sep="")
+    cat("CV = ",CV,"; n(stage 1) = ",n1,"; GMR = ",GMR, "\n", sep="")
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
     if (powerstep) cat("Interim power monitoring step included.\n") else 
       cat("No interim power monitoring step used.\n")
     if(usePE) cat("PE and mse of stage 1 in sample size est. used.\n") else {
-      cat("GMR=",GMR, "and mse of stage 1 in sample size est. used.\n")}
-    cat("Target power in power monitoring and sample size est. = ", 
-        targetpower,"\n",sep="")
+      cat("GMR =",GMR, "and mse of stage 1 in sample size est. used.\n")}
+    if (powerstep){
+      cat("Target power in power monitoring and sample size est. = ", 
+          targetpower,"\n",sep="")
+    } else {
+      cat("Target power in sample size est. = ", targetpower,"\n",sep="")
+    }  
     cat("\n",nsims," sims at theta0= ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1= ", res$pBE_s1,"\n", sep="")
-    cat("pct studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
+    cat("p(BE)    = ", res$pBE,"\n", sep="")
+    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
+    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
     cat("\nDistribution of n(total)\n")
-    cat("- mean (range)= ", round(res$nmean,1)," (", min(ntot)," ... ",
-        max(ntot),")\n", sep="")
+    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
+        res$nrange[2],")\n", sep="")
     cat("- percentiles\n")
     print(res$nperc)
     cat("\n")

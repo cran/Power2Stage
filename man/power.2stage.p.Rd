@@ -84,7 +84,7 @@ True ratio of T/R for simulating. Defaults to the \code{GMR} argument if missing
 Lower bioequivalence limit. Defaults to 0.8.
 }
   \item{theta2}{
-Lower bioequivalence limit. Defaults to 1.25.
+Upper bioequivalence limit. Defaults to 1.25.
 }
   \item{npct}{
 p-values to be used for the percentiles of the distribution of n(total)=n1+n2.\cr

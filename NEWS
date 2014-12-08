@@ -1,49 +1,65 @@
-Version 0.1-05
+Version 0.2-2
+2014-12-08
+   - CRAN version of V0.2-1 with two nasty bugs removed.
+Version 0.2-1
+2014-12-06   (Dedicated to my daughter Antje's 40 birthday)
+released to alpha-testers only
+   - Depreciated function power.2stage.Bf() removed
+   - Functions power.2stage() and power.2stage.fC() now have an argument
+     min.n2 to restrict the sample size for stage 2 to a lower limit
+   - Calculation of % studies in stage 2 re-defined to studies having total n>n1
+     (was in the past studies which had to be evaluated with alpha2, affects 
+      only 'unsymmetrical' alpha settings)
+   - Function power.2stage.ssr() for (blinded) sample size re-estimation added
+     (2-stage design without BE decision at interim)
+   - Some code streamlining
+   - Some enhancements and unification of output of power functions
+Version 0.1-5
 2014-10-09
    - power.2stage.Bf() reworked into the new function power.2stage.fC() to 
      include Potvin method "C" and to include an additional futility criterion 
      for the CI also. power.2stage.Bf() is depreciated and will not be contained 
      in one of the next versions. Use power.2stage.fC() instead.
-Version 0.1-04
+Version 0.1-4
 2014-07-24
    - Bug in power.2stage.GS() removed which prevented the convergence of power
      values with increasing number of sims
-Version 0.1-03
+Version 0.1-3
 2014-07-02
    - Power calculation method "shifted" added in power.2stage() to the aim 
      of comparison to Potvin et al.
    - Internal change of start value of sample size search to avoid 
      failed searches if variability is high and theta0 is near 1.
-Version 0.1-02
+Version 0.1-2
 not released to the public
    - Special version to alpha testers
-Version 0.1-01
+Version 0.1-1
 2014-05-08 released via CRAN
 2014-04-24 release to alpha testers
    - Contains now the function power.2stage.p() for calculation of power in
      BE studies with sequential (2-stage) designs with 2 parallel groups.
    - Some internal code streamlinig.
-Version 0.0-08
+Version 0.0-8
 2014-04-11
    - Bug in power.2stage.KM() removed if using method="B" (Karalis TSD-2).
      Thanks again and again to Helmut Schuetz!
    - Man page of power.2stage.KM() changed to the correct definition of
      the Karalis/Macheras TSD or Karalis TSD-1, TSD-2 respectively.
-Version 0.0-07
+Version 0.0-7
 2014-02-13
    - Maintenance release to reflect the changes in PowerTOST V1.1-10.
    - Contains now the function power.2stage.GS() for non-adaptive group
      sequential (2-stage) BE studies.
-Version 0.0-06
+Version 0.0-6
 2014-01-02 
    - Examples adapted to complain with CRAN policy "Examples should run for 
      no more than a few seconds each". Few seconds means below 5 sec as I learned.
      Attention! Number of sims are too low to have meaningfull results.
      Minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'.
-Version 0.0-05
+Version 0.0-5
 2013-12-27 
    - First attempt to release via CRAN
-Version 0.0-04
+Version 0.0-4
 2013-09-12 not released, internal version only
    - Function power2.2stage() renamed to power.2stage.KM()
    - Arguments in power.2stage.KM() omitted which are not necessary for
@@ -53,11 +69,11 @@ Version 0.0-04
    - Function power.2stage.Bf() implemented which evaluates a 2-stage design
      derived from Potvin method 'B' with a futility criterion for the PE
      of stage 1.
-Version 0.0-03
+Version 0.0-3
 2013-09-03 released to alpha testers
    - function power2.2stage() implemented which uses PE and MSE of stage 1
      also for the power calculation steps if usePE=TRUE
-Version 0.0-02
+Version 0.0-2
 2013-07-10 released to alpha testers
    - Default for npct argument changed to c(0.05, 0.5, 0.95) in accordance
      with the Potvin papers.
@@ -67,6 +83,6 @@ Version 0.0-02
    - Bug in output removed claiming that sample size is estimated with PE 
      & mse from stage 1 even if argument usePE=FALSE (THX to Helmut).
    - Internally stage vector introduced and output based on that.
-version 0.0-01
+version 0.0-1
 2013-07-09
    - First release to alpha testers

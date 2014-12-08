@@ -9,19 +9,18 @@
 # source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
 # source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
 
-
 power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
                          n1, GMR, CV, targetpower=0.8, 
                          pmethod=c("nct","exact", "shifted"),
-                         usePE=FALSE, Nmax=Inf, theta0, theta1, theta2,  
+                         usePE=FALSE, Nmax=Inf, min.n2=0, theta0, theta1, theta2,  
                          npct=c(0.05, 0.5, 0.95), nsims=1e5, setseed=TRUE, 
                          print=TRUE, details=TRUE)
 {
-  if (missing(CV)) stop("CV must be given!")
-  if (CV<=0)       stop("CV must be >0!")
+  if (missing(CV)) stop("CV must be given.")
+  if (CV<=0)       stop("CV must be >0.")
   
-  if (missing(n1)) stop("Number of subjects in stage 1 must be given!")
-  if (n1<=0)       stop("Number of subjects in stage 1 must be >0!")
+  if (missing(n1)) stop("Number of subjects in stage 1 must be given.")
+  if (n1<=0)       stop("Number of subjects in stage 1 must be >0.")
   
   if (missing(GMR)) GMR <- 0.95
   
@@ -29,11 +28,18 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   if (!missing(theta1) & missing(theta2)) theta2 <- 1/theta1
   if (missing(theta1) & !missing(theta2)) theta1 <- 1/theta2
   
-  if (GMR<=theta1 | GMR>=theta2) stop("GMR must be within acceptance range!")
+  if (GMR<=theta1 | GMR>=theta2) stop("GMR must be within acceptance range.")
   
   if (missing(theta0)) theta0 <- GMR
   
   if (n1>Nmax) stop("n1>Nmax doestn't make sense!")
+  
+  if(min.n2!=0 & min.n2<2) stop("min.n2 has to be at least +2.")
+  # make even (round up)
+  if( min.n2%%2 != 0) {
+    min.n2 <- min.n2 + min.n2%%2
+    message("min.n2 rounded to even", min.n2)
+  }
   
   # check if Potvin B or C
   method  <- match.arg(method)
@@ -119,7 +125,6 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     print(round((proc.time()-ptm)/60,3))
   }
 
-  # ------- Try to make all the stage 2 calculations without a loop
   # ------sample size for stage 2 -----------------------------------------
   ntot     <- rep(n1, times=nsims)
   stage    <- rep(1, times=nsims)
@@ -157,16 +162,18 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
                                  method=pmethod, bk=2))
     }
-    
-    n2  <- ifelse(nt>n1, nt - n1, 0)
+    #browser()
+    n2 <- ifelse(nt>n1, nt - n1, 0)
+    # assure a min.n2
+    n2 <- ifelse(n2<min.n2, min.n2, n2)
+    # some upper bound due to numerics?
     #n2  <- ifelse(n2>100000, 100000, n2) # may not necessary
     
     if(print & details){
       cat("Time consumed (min):\n")
       print(round((proc.time()-ptms)/60,2))
     }
-    # futility rule: if nt > Nmax -> stay with stage 1 result not BE
-    # ntotal = n1 reasonable?
+    # futility rule: if nt > Nmax -> stay with stage 1 result: not BE
     if (is.finite(Nmax) | any(!is.finite(nt))){
       # sample size may return Inf if PE is used in ss estimation
       # in that case we stay with stage 1
@@ -223,8 +230,18 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
               theta0=exp(mlog), theta1=theta1, theta2=theta2, usePE=usePE, 
               Nmax=Nmax, nsims=nsims,
               # results 
-              pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims, 
-              pct_s2=100*length(BE[stage==2])/nsims, 
+              pBE=sum(BE)/nsims,
+              # Dec 2014 changed to
+              pBE_s1=sum(BE[ntot==n1])/nsims,
+              # was
+              #pBE_s1=sum(BE[stage==2])/nsims,
+              # Dec 2014 changed the meaning of pct_s2, was
+              #pct_s2=100*length(BE[stage==2])/nsims,
+              # whereby in case of unsymmetric alpha's stage 2 was also assigned
+              # if n2=0 but not BE using alpha[1] to fascilate BE test with alpha[2]
+              # now it is 
+              pct_s2=100*sum(ntot>n1)/nsims, 
+              # which simply means all those with n2>0
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
   # output
   if (print) {
@@ -234,27 +251,29 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
       cat("\n")
     }
     cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0= ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2)=", alpha[1], alpha[2], "\n")
-    cat("Futility criterion Nmax= ",Nmax,"\n", sep="")
-    cat("CV= ",CV,"; n(stage 1)= ",n1,"; GMR= ",GMR, "\n", sep="")
+    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
+    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
+    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
+    cat("CV = ",CV,"; n(stage 1)= ",n1,"; GMR = ",GMR, "\n", sep="")
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
     if(usePE) cat("PE and mse of stage 1 in sample size est. used\n") else {
-      cat("GMR=",GMR, "and mse of stage 1 in sample size est. used\n")}
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
+      cat("GMR =",GMR, "and mse of stage 1 in sample size est. used\n")}
+    cat("Target power in power monitoring and sample size est. = ", 
+        targetpower,"\n",sep="")
+    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1= ", res$pBE_s1,"\n", sep="")
-    cat("pct studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
+    cat("p(BE)    = ", res$pBE,"\n", sep="")
+    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
+    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
     cat("\nDistribution of n(total)\n")
-    cat("- mean (range)= ", round(res$nmean,1)," (", min(ntot)," ... ",
-        max(ntot),")\n", sep="")
+    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
+        res$nrange[2],")\n", sep="")
     cat("- percentiles\n")
     print(res$nperc)
     cat("\n")
   } 
-  #what shall we return?
+  
   if (print) return(invisible(res)) else return(res)
   
 } #end function

@@ -238,26 +238,29 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
       cat("\n")
     }
     cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0= ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2)=", alpha[1], alpha[2], "\n")
-    cat("Futility criterion Nmax= ",Nmax,"\n", sep="")
-    cat("CV= ",CV,"; n(stage 1)= ", n1, "\n", sep="")
+    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
+    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
+    cat("Modification(s) according to Karalis/Macheras")
+    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
+    cat("CV = ",CV,"; n(stage 1) = ", n1, "\n", sep="")
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
     cat("PE and mse of stage 1 in power steps and sample size est. used\n") 
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
+    cat("Target power in power monitoring and sample size est. = ", 
+        targetpower,"\n",sep="")
+    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1= ", res$pBE_s1,"\n", sep="")
-    cat("pct studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
+    cat("p(BE)    = ", res$pBE,"\n", sep="")
+    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
+    cat("Studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
     cat("\nDistribution of n(total)\n")
-    cat("- mean (range)= ", round(res$nmean,1)," (", min(ntot)," ... ",
-        max(ntot),")\n", sep="")
+    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
+        res$nrange[2],")\n", sep="")
     cat("- percentiles\n")
     print(res$nperc)
     cat("\n")
   } 
-  #what shall we return?
+
   if (print) return(invisible(res)) else return(res)
   
 } #end function

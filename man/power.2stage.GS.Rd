@@ -19,36 +19,38 @@ Vector of the two nominal alpha values to be used in the 1-2*alpha confidence
 intervals calculations.
 }
   \item{n}{
-Vector of the two sample sizes in stage 1 and stage 2.
+Vector of the two sample sizes in stage 1 and stage 2.\cr
+n(total is n1+n2).
 }
   \item{CV}{
 Coefficient of variation of the intra-subject variability as ratio.
 }
   \item{theta0}{
-True ratio of T/R for simulating. Defaults to the 0.95 if missing.
+True ratio of T/R for simulating. Defaults to 0.95 if missing.
 }
   \item{theta1}{
 Lower bioequivalence limit. Defaults to 0.8.
 }
   \item{theta2}{
-Lower bioequivalence limit. Defaults to 1.25.
+Upper bioequivalence limit. Defaults to 1.25.
 }
   \item{fCrit}{
 Futility criterion.\cr
-If set to \code{"PE"} the study stops after stage 1 if not BE and if the point estimator
-of stage 1 evaluation is outside the range defined in the next two argumenmts.\cr
-If set to \code{"CI"} the study stops after stage 1 if not BE and if the confidence
-interval of stage 1 evaluation is outside the range defined in the next 
-two argumenmts.\cr
+If set to \code{"PE"} the study stops after stage 1 if not BE and if the point 
+estimator of stage 1 evaluation is outside the range defined in the next two 
+argumenmts \code{"fClower"} and \code{"fCupper"}.\cr
+If set to \code{"CI"} the study stops after stage 1 if not BE and if the 
+confidence interval of stage 1 evaluation is outside the range defined in the 
+next two argumenmts.\cr
 Defaults to \code{"PE"}.
 }
   \item{fClower}{
 Lower limit of the futility criterion.\cr
-Defaults to \code{theta1} if missing.
+Defaults to \code{theta1} if missing, i.e. no futility criterion.
 }
   \item{fCupper}{
 Upper limit of the futility criterion.\cr
-defaults to \code{1/fClower} if missing.
+Defaults to \code{1/fClower} if missing.
 }
   \item{nsims}{
 Number of studies to simulate. Defaults to 1E+05 = 100 000.\cr

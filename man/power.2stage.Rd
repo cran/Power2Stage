@@ -11,9 +11,8 @@ done with point estimator & mse of stage 1.
 }
 \usage{
 power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
-             n1, GMR, CV, targetpower = 0.8, 
-             pmethod = c("nct", "exact", "shifted"),
-             usePE = FALSE, Nmax = Inf, theta0, theta1, theta2,  
+             n1, GMR, CV, targetpower = 0.8, pmethod = c("nct", "exact", "shifted"),
+             usePE = FALSE, Nmax = Inf, min.n2=0, theta0, theta1, theta2,  
              npct = c(0.05, 0.5, 0.95), nsims = 1e+05, setseed = TRUE, 
              print = TRUE, details = TRUE)
 }
@@ -68,6 +67,11 @@ sample size >Nmax is obtained will be regarded as BE=FAIL.\cr
 Set this argument to \code{Inf}, the default, to work without that futility
 criterion.
 }
+  \item{min.n2}{
+Minimum sample size of stage 2. Defaults to zero.\cr
+If the sample size estimation step gives N < n1 the sample size for stage 2 
+will be set to \code{min.n2}, i.e. the total sample size to \code{n1+min.n2}.
+}
   \item{theta0}{
 True ratio of T/R for simulating. Defaults to the \code{GMR} argument if missing.
 }
@@ -75,7 +79,7 @@ True ratio of T/R for simulating. Defaults to the \code{GMR} argument if missing
 Lower bioequivalence limit. Defaults to 0.8.
 }
   \item{theta2}{
-Lower bioequivalence limit. Defaults to 1.25.
+Upper bioequivalence limit. Defaults to 1.25.
 }
   \item{npct}{
 p-values to be used for the percentiles of the distribution of n(total)=n1+n2.\cr
