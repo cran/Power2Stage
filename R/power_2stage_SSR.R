@@ -84,11 +84,12 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   s2os <- (df*mses + n1*pes^2/2)/(n1-1)
   # unblind
   if (!blind) s2os <- mses
-  #browser()
+
   if(print & details){
     # time for stage 1 sims
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),2))
+    cat("Keep calm. ")
   }
 
   # ------ recalculate sample size -----------------------------------------
@@ -98,10 +99,9 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   # will give some boost for small CV's and/or high n1
   if(pmethod!="ls"){
     pwr <- .calc.power(alpha=alpha, ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, se=sqrt(s2os), n=n1, df=df, bk=bk, 
-                       method=pmethod)
+                       diffm=lGMR, sem=sqrt(bk*s2os/n1), df=df, method=pmethod)
     if(print & details){
-      cat("Keep calm. Sample sizes (", sum(pwr<targetpower),
+      cat("Sample sizes (", sum(pwr<targetpower),
           " studies) will be re-estimated.\n", sep="")
       cat("May need some time.\n")
     }
@@ -110,13 +110,12 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
     # moreover ssr is so fast that we don't need the power step
     pwr  <- rep(0, times=nsims)
     if(print & details){
-      cat("Keep calm. Sample sizes will be re-estimated.\n")
+      cat("Sample sizes will be re-estimated.\n")
       cat("May need some time.\n")
     }
   }
   # total sample size
   ntot <- rep(n1, times=nsims)
-  # browser()
   mse_tmp <- s2os[pwr<targetpower]
   # large sample approx. via normal distribution
   if(pmethod=="ls"){
@@ -124,11 +123,13 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
                      diffm=lGMR, ltheta1=ltheta1, ltheta2=ltheta2, bk=2, 
                      steps=2, diffmthreshold=0.0)
   } else {
-    nt <- mapply(FUN=.sampleN, mse=mse_tmp, 
-                 MoreArgs=list(alpha=alpha, targetpower=targetpower, 
-                               ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-                               method=pmethod, bk=2))
-    # returns list() if mse_tmp has length 0!
+#     nt <- mapply(FUN=.sampleN, mse=mse_tmp, 
+#                  MoreArgs=list(alpha=alpha, targetpower=targetpower, 
+#                                ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
+#                                method=pmethod, bk=2))
+     nt <- .sampleN2(alpha=alpha, targetpower=targetpower, ltheta0=lGMR,
+                     mse=mse_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
+                     method=pmethod, bk=2)
   }
   # maybe we have enough power in all cases and thus no re-estimated sample size
   if(length(nt)>0) ntot[pwr<targetpower] <- nt
@@ -136,7 +137,6 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   rm(nt, pwr, mse_tmp)
   # sample size returns Inf if pe outside acceptance range, then stay with n1 
   # but this should not occure here since pe1 is not used
-  #browser()
   ntot <- ifelse(is.finite(ntot), ntot, n1)
   # use max.n if nt > max.n
   ntot <- ifelse(ntot>max.n, max.n, ntot)
@@ -148,8 +148,8 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   n2 <- ifelse(n2<0, 0, n2)
 
   if(print & details){
-    cat("Time consumed (min):\n")
-    print(round((proc.time()-ptms)/60,2))
+    cat("Time consumed (secs):\n")
+    print(round((proc.time()-ptms),1))
   }
 
   # ---------- stage 2 evaluation --------------------------------------
@@ -176,7 +176,6 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
     SSmean <- 0
     df2    <- ntot-2
   }
-  #browser()
   pe2    <- ifelse(n2>0, (n1*m1+n2*m2)/ntot, pes)
   mse2   <- ifelse(n2>0, (SS1+SSmean+SS2)/df2, mses)
   # take care of memory
@@ -201,27 +200,28 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   # output
   if (print) {
     if (details){
-      cat("Total time consumed (min):\n")
-      print(round((proc.time()-ptm)/60,2))
+      cat("Total time consumed (secs):\n")
+      print(round((proc.time()-ptm),1))
       cat("\n")
     }
     if(blind) blinded <- "blinded " else blinded <- ""
     cat("2-stage design with ", blinded, "sample size re-estimation\n", sep="")
     cat("Nominal alpha =", alpha, "\n")
-    cat("CV= ", CV,"; n(stage 1)= ", n1,"\n", sep="")
     cat("Sample size based on power calculated via", pmethod, "method\n")
-    cat("with GMR=", GMR,"and targetpower=", targetpower,"\n")
+    cat("with GMR =", GMR,"and targetpower =", targetpower,"\n")
     if(is.finite(max.n)){
-      cat("Maximum sample size max.n= ",max.n,"\n", sep="")
+      cat("Maximum sample size max.n = ",max.n,"\n", sep="")
     }
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
+    cat("CV= ", CV,"; n(stage 1) = ", n1,"\n", sep="")
+    
+    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}
     cat("p(BE)   = ", res$pBE,"\n", sep="")
     cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
     cat("\nDistribution of n(total)\n")
-    cat("- mean (range)= ", round(res$nmean,1)," (", res$nrange[1]," ... ",
+    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
         res$nrange[2],")\n", sep="")
     cat("- percentiles\n")
     print(res$nperc)

@@ -136,24 +136,17 @@ The results are in the components:
 }
 \references{
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with 
-crossover designs"\cr
+"Sequential design approaches for bioequivalence studies with crossover designs"\cr
 Pharmaceut. Statist. 7(4), 245-62 (2008)
 }
 \author{
 D. Labes
-}
-\note{
-The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee if 
-you simulate for 'alpha' with 1 Mio (1E6) sims.
 }
 \seealso{
 \code{\link{power.2stage}}
 }
 \examples{
 # using all the defaults
-# but too low number of sims to complain with CRAN policy 
-# "examples check time a few seconds" (a few means <5 sec)
-power.2stage.fC(CV=0.25, n1=24, nsims=1E4)
+power.2stage.fC(CV=0.25, n1=24)
+# run-time ~1 sec
 }

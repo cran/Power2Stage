@@ -3,11 +3,13 @@
 # methods "B" and "C", modified to include a futility criterion Nmax
 # modified to use PE of stage 1 in sample size estimation
 #
-# author D.L.
+# Author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
-# source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
+# source("./R/sampsiz.R")
+# source("./R/sampsiz2.R")
+# source("./R/sampsiz_n0.R")
+# source("./R/power.R")
 
 power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
                          n1, GMR, CV, targetpower=0.8, 
@@ -76,8 +78,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   if(method=="C"){
     # if method=C then calculate power for alpha0=0.05 and plan GMR
     pwr <- .calc.power(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, se=sqrt(mses), n=n1, df=df, bk=bk, 
-                       method=pmethod)
+                       diffm=lGMR, sem=sqrt(bk*mses/n1), df=df, method=pmethod)
     
     tval0 <- qt(1-alpha0, df)
     hw    <- tval0*sqrt(Cfact*mses)
@@ -107,7 +108,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     # method B
     # evaluate power at alpha[1]
     pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, se=sqrt(mses_tmp), n=n1, df=df, bk=bk, 
+                       diffm=lGMR, sem=sqrt(bk*mses_tmp/n1),df=df,  
                        method=pmethod)
     # if BE met then decide BE regardless of power
     # if not BE and power<0.8 then goto stage 2
@@ -121,8 +122,8 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   
   # time for stage 1
   if(print & details){
-    cat(" - Time consumed (min):\n")
-    print(round((proc.time()-ptm)/60,3))
+    cat(" - Time consumed (secs):\n")
+    print(round((proc.time()-ptm),1))
   }
 
   # ------sample size for stage 2 -----------------------------------------
@@ -136,7 +137,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     if(print & details){
       cat("Keep calm. Sample sizes for stage 2 (", length(pes_tmp),
           " studies)\n", sep="")
-      cat("will be estimated. May need some minutes.\n")
+      cat("will be estimated. May need some time.\n")
     }
     # preliminary setting stage=2 for those not yet decided BE
     # may be altered for those with nt>Nmax or nt=Inf 
@@ -151,18 +152,23 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     if (usePE){
       # use mse1 & pe1 like in the paper of Karalis/Macheras
       # sample size function returns Inf if pe1 is outside acceptance range
-      nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
-                   MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-                                 ltheta1=ltheta1, ltheta2=ltheta2,
-                                 method=pmethod, bk=2))
+#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
+#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
+#                                  ltheta1=ltheta1, ltheta2=ltheta2,
+#                                  method=pmethod, bk=2))
+      nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp,
+                      mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
+                      method=pmethod)
     } else {
       # use mse1 & GMR to calculate sample size (original Potvin)
-      nt <- mapply(FUN=.sampleN, mse=mses_tmp, 
-                   MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-                                 ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-                                 method=pmethod, bk=2))
+#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, 
+#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
+#                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
+#                                  method=pmethod, bk=2))
+      nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=lGMR,
+                      mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
+                      method=pmethod)
     }
-    #browser()
     n2 <- ifelse(nt>n1, nt - n1, 0)
     # assure a min.n2
     n2 <- ifelse(n2<min.n2, min.n2, n2)
@@ -170,8 +176,8 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     #n2  <- ifelse(n2>100000, 100000, n2) # may not necessary
     
     if(print & details){
-      cat("Time consumed (min):\n")
-      print(round((proc.time()-ptms)/60,2))
+      cat("Time consumed (secs):\n")
+      print(round((proc.time()-ptms),1))
     }
     # futility rule: if nt > Nmax -> stay with stage 1 result: not BE
     if (is.finite(Nmax) | any(!is.finite(nt))){
@@ -246,20 +252,20 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   # output
   if (print) {
     if (details){
-      cat("Total time consumed (min):\n")
-      print(round((proc.time()-ptm)/60,2))
+      cat("Total time consumed (secs):\n")
+      print(round((proc.time()-ptm),1))
       cat("\n")
     }
     cat("Method ", method,":", sep="")
     if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
     cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
-    cat("CV = ",CV,"; n(stage 1)= ",n1,"; GMR = ",GMR, "\n", sep="")
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    if(usePE) cat("PE and mse of stage 1 in sample size est. used\n") else {
-      cat("GMR =",GMR, "and mse of stage 1 in sample size est. used\n")}
     cat("Target power in power monitoring and sample size est. = ", 
         targetpower,"\n",sep="")
+    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
+    cat("CV = ",CV,"; n(stage 1)= ",n1,"; GMR = ",GMR, "\n", sep="")
+    if(usePE) cat("PE and mse of stage 1 in sample size est. used\n") else {
+      cat("GMR =", GMR, "and mse of stage 1 in sample size est. used\n")}
+    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
     cat("\n",nsims," sims at theta0 = ", theta0, sep="")
     if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
        cat(" (p(BE)='power').\n")}

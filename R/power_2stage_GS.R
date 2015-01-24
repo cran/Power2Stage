@@ -97,7 +97,6 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   }
 
   if (nsims2>0){
-    #browser()
     m1    <- pes[s2==TRUE]
     SS1   <- (n[1]-2)*mses[s2==TRUE]
     # --- simulate stage 2 data

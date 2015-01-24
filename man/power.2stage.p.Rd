@@ -1,20 +1,35 @@
 \name{power.2stage.p}
 \alias{power.2stage.p}
+\alias{power.2stage.pAF}
 \title{
 Power calculation of adaptive 2-stage BE studies with 2-group parallel design
 }
 \description{
-This function calculates the 'empirical' power of 2-stage BE studies according
+This functions calculate the 'empirical' power of 2-stage BE studies according
 to A. Fuglsang via simulations. The Potvin decision schemes are modified to 
 include a futility criterion Nmax and to allow the sample size estimation 
-step to be done with point estimator & variabilities from stage 1.
+step to be done with point estimator & variabilities from stage 1.\cr\cr
+Function \code{power.2stage.pAF()} performes exactly as described in the
+paper Fuglsang 2014, namely the power monitoring steps and the sample size
+estimation are based always on the pooled t-test.\cr
+Function \code{power.2stage.p()} with argument \code{test = "welch"} on the other 
+hand uses the genuine power of Welch's test. Moreover it accepts unbalanced 
+stage 1 treatment groups.
 }
 \usage{
 power.2stage.p(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
-              n1, GMR, CV, targetpower = 0.8, pmethod = c("nct", "exact"), 
-              usePE = FALSE, Nmax = Inf, test = c("welch", "t-test", "anova"), 
-              theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
-              nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
+               n1, GMR, CV, targetpower = 0.8, 
+               pmethod = c("nct", "exact", "shifted"), 
+               usePE = FALSE, Nmax = Inf, test = c("welch", "t-test", "anova"), 
+               theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
+               nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
+
+power.2stage.pAF(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
+                 n1, GMR, CV, targetpower = 0.8, 
+                 pmethod = c("shifted", "nct", "exact"), 
+                 usePE = FALSE, Nmax = Inf, test = c("welch", "t-test", "anova"), 
+                 theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
+                 nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
 }
 \arguments{
   \item{method}{
@@ -32,7 +47,10 @@ Vector (length=2) of the nominal alpha's for the two stages.\cr
 Defaults to the Pocock alpha setting \code{alpha=c(0.0294,0.0294)}.
 }
   \item{n1}{
-(Total) Sample size for stage 1.
+(Total) Sample size for stage 1.\cr
+Function \code{power.2stage.p()} accepts here also a vector of length 2
+with the numbers in treatment groups for stage 1.\cr
+In case of given as scalar the total n1 should be even.
 }
   \item{GMR}{
 Ratio T/R to be used in the Potvin decision schemes (power calculations 
@@ -50,9 +68,12 @@ power to achieve in the sample size estimation step.
   \item{pmethod}{
 Power calculation method, also to be used in the sample size estimation for 
 stage 2.\cr 
-Implemented are "nct" = approximate calculations via non-central t-distribution 
+Implemented are "nct" = approximate calculations via non-central t-distribution,
+"shifted" = approximate calculations via 'shifted' central t-distribution
 and "exact" = exact calculations via Owen's Q.\cr
-Defaults to "nct" for speed reasons in the sample size estimation step.
+Defaults to "nct" for speed reasons in function \code{power.2stage.p()}.\cr
+Defaults to "shifted" in function \code{power.2stage.pAF()} according to the
+Fuglsang 2014 paper.\cr
 }
   \item{usePE}{
 If \code{TRUE} the sample size estimation step is done with PE and mse of 
@@ -112,7 +133,8 @@ of the simulation steps.
 }
 }
 \details{
-The calculations follow in principle the simulations as described in Fuglsang A.\cr
+The calculations follow in principle the simulations as described in Fuglsang A. 
+2014\cr
 The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics (mean and variance of Test
 and Reference of stage 1 and stage 2) are simulated via their associated 
@@ -131,7 +153,7 @@ The results are in the components:
 \references{
 Fuglsang A.\cr
 "Sequential Bioequivalence Approaches for Parallel Design"\cr
-AAPS J. 2014 Feb 14. [Epub ahead of print]
+AAPS J. 16(3), 373-378 (2014) [Epub 2014 Feb 14.]
 
 Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with crossover designs"\cr
@@ -140,19 +162,10 @@ Pharmaceut. Statist. 7(4), 245-62 (2008)
 \author{
 D. Labes
 }
-\note{
-The computation time is between ~ 0.01 - 1 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee if 
-you simulate for 'alpha' with 1 Mio sims.
-}
 \seealso{
 \code{\link{power.2stage}} for analogous calculations for the 2x2 crossover.
 }
 \examples{
 # using all the defaults
-# but with too low number of sims to complain with CRAN policy: 
-# "Examples should run for no more than a few seconds each"
-# minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'!
-power.2stage.p(n1=48, CV=0.25, nsims=1E4)
-# computation time ~ 8 sec if 1E5 sims were used.
+power.2stage.p(n1=48, CV=0.25)
 }

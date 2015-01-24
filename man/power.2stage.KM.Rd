@@ -138,15 +138,11 @@ AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12.
 \author{
 D. Labes
 }
-\note{
-The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee 
-or a cigarette if you simulate for 'alpha' with 1E6 (1 Mio) sims .
-}
 \examples{
 # using all the defaults
 # but too low number of sims to complain with the CRAN policy: 
 # "check time only a few seconds per example"
 # minimum number of sims should be 1E5 for power, 1E6 sims for 'alpha'
 power.2stage.KM(n1=16, CV=0.2, nsims=1E4)
+# 3.3 secs if nsims=1E5
 }

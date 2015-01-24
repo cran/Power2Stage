@@ -10,7 +10,6 @@
 # source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
 # source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
 
-
 power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.0294),
                             n1, CV, targetpower=0.8, pmethod=c("nct","exact"),
                             Nmax=150, theta0, theta1, theta2, 
@@ -74,9 +73,9 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     mses_tmp <- mses[is.na(BE)]
     pes_tmp  <- pes[is.na(BE)]
     # if method=C then calculate power for alpha0=0.05, mse and pe from stage 1
-    pwr <- mapply(.calc.power, diffm=pes_tmp, se=sqrt(mses_tmp),
+    pwr <- mapply(.calc.power, diffm=pes_tmp, sem=sqrt(bk*mses_tmp/n1),
                   MoreArgs=list(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2,
-                                n=n1, df=df, bk=bk, method=pmethod))
+                                df=df, method=pmethod))
     tval0 <- qt(1-alpha0, df)
     hw    <- tval0*sqrt(Cfact*mses_tmp)
     lower <- pes_tmp - hw
@@ -109,13 +108,11 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   } else { 
     # method B
     # evaluate power at alpha[1] using PE and mse of stage 1
-    pwr <- mapply(.calc.power, diffm = pes_tmp, se = sqrt(mses_tmp), 
+    pwr <- mapply(.calc.power, diffm = pes_tmp, sem = sqrt(bk*mses_tmp/n1), 
                   MoreArgs = list(alpha = alpha[1], ltheta1 = ltheta1, 
-                                  ltheta2 = ltheta2, n = n1, df = df, bk = bk, 
-                                  method = pmethod))
+                                  ltheta2 = ltheta2, df = df, method = pmethod))
     # if BE met then decide BE regardless of power
     # if not BE and power<0.8 then goto stage 2
-    #browser()
     BE1[ !BE1 & pwr<targetpower ] <- NA 
     # take care of memory
     rm(pwr)
@@ -126,8 +123,8 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   rm(BE1)
   
   if(print & details){
-    cat(" - Time consumed (min):\n")
-    print(round((proc.time()-ptm)/60,3))
+    cat(" - Time consumed (secs):\n")
+    print(round((proc.time()-ptm),1))
   }
 
   # ------sample size for stage 2 -----------------------------------------
@@ -141,7 +138,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     if(print & details){
       cat("Keep calm. Sample sizes (", length(pes_tmp),
           " studies) for stage 2\n", sep="")
-      cat("will be estimated. May need some minutes.\n")
+      cat("will be estimated. May need some time.\n")
     }
     # preliminary setting stage=2 for those not yet decided BE
     # may be altered for those with nt>Nmax or nt=Inf 
@@ -155,19 +152,23 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     ptms <- proc.time()
     # use mse1 & pe1 as described in Karalis/Macheras
     # sample size function returns Inf if pe1 is outside acceptance range
-    nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
-                 MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-                               ltheta1=ltheta1, ltheta2=ltheta2, 
-                               method=pmethod, bk=bk))
-#      cat("\nSummary of n(total)\n")
-#      print(summary(nt))
-#      res_n <- data.frame(pe=head(pes_tmp),mse=head(mses_tmp),nt=head(nt))
-#      print(res_n)
+#     nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
+#                  MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
+#                                ltheta1=ltheta1, ltheta2=ltheta2, 
+#                                method=pmethod, bk=bk))
+    nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp,
+                    mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
+                    method=pmethod, bk=bk)
     n2  <- ifelse(nt>n1, nt - n1, 0)
     
     if(print & details){
-      cat("Time consumed (min):\n")
-      print(round((proc.time()-ptms)/60,2))
+      if(nsims<=1E5 & pmethod!="exact"){
+        cat("Time consumed (secs):\n")
+        print(round((proc.time()-ptms),1))
+      } else {
+        cat("Time consumed (min):\n")
+        print(round((proc.time()-ptms)/60,2))
+      }
     }
     # futility rule: if nt > Nmax -> stay with stage 1 result not BE
     # ntotal = n1 reasonable?
@@ -233,14 +234,19 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   # output
   if (print) {
     if (details){
-      cat("Total time consumed (min):\n")
-      print(round((proc.time()-ptm)/60,2))
+      if(nsims<=1E5 & pmethod!="exact"){
+        cat("Total time consumed (secs):\n")
+        print(round((proc.time()-ptm),1))
+      } else {
+        cat("Total time consumed (min):\n")
+        print(round((proc.time()-ptm)/60,2))
+      }
       cat("\n")
     }
     cat("Method ", method,":", sep="")
     if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
     cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("Modification(s) according to Karalis/Macheras")
+    cat("Modification(s) according to Karalis/Macheras\n")
     cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
     cat("CV = ",CV,"; n(stage 1) = ", n1, "\n", sep="")
     cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")

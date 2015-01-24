@@ -150,20 +150,13 @@ AAPS J. 2014 Jan; 16(1):79-82. Epub 2013 Nov 12.
 \author{
 D. Labes
 }
-\note{
-The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM). Thus be patient and take a pot of coffee if 
-you simulate for 'alpha' with 1 Mio sims.
-}
 \seealso{
 \code{\link{power.2stage.p}} for analogous calculations for 2-group parallel 
 design.
 }
 \examples{
 # using all the defaults
-# but too low number of sims to complain with CRAN policy 
-# "Examples should run for no more than a few seconds each"
 # minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'
-power.2stage(n1=24, CV=0.25, nsims=1E4)
-# computation time ~ 16 sec if 1E5 sims were used.
+power.2stage(n1=24, CV=0.25)
+# computation time ~ 1 sec
 }

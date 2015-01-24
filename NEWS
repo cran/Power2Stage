@@ -1,3 +1,16 @@
+Version 0.3-1
+2015-01-24  (dedicated to my brothers Stefan's 50 birthday)
+   - Major code revision to reflect the internal changes in upcoming 
+     PowerTOST V1.2-06 'raw' power functions
+   - Sample-size estimation routine (vectorized!) reworked which gives
+     a considerable run-time boost
+   - Internal change of start value of sample size estimation to Zhang's
+     formula (may change the extremal value of n and its mean if usePE=TRUE)
+   - Function power.2stage.p() accepts now unbalanced stage 1 and uses the 
+     correct power of Welch's test in the power monitoring stepsand in 
+     sample size estimation
+   - Former function power.2stage.p() now available as power.2stage.pAF()
+     which does the calculations exactly as described in A.Fuglsang's paper 
 Version 0.2-2
 2014-12-08
    - CRAN version of V0.2-1 with two nasty bugs removed.

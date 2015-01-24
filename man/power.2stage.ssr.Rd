@@ -129,9 +129,9 @@ Pharmaceut. Statist. 7(4), 245-62 (2008)
 D. Labes
 }
 \note{
-The computation time is between ~ 0.01 - 0.4 min for 100 000 sims on my machine
-(Intel core i3 2.93 GHz, 4GB RAM) if the nct approximation is used. Thus be 
-patient and take a pot of coffee if you simulate for 'alpha' with 1 Mio sims.\cr
+The computation time is in the magnitude of a few seconds for 100 000 sims on my 
+machine (Intel core i7 2.5 GHz, 12GB RAM) if the nct approximation is used. 
+Thus be a bit patient if you simulate for 'alpha' with 1 Mio sims.\cr
 Using the crude \code{pmethod="ls"} results in a nearly immediate sample size 
 re-estimation.
 }
@@ -143,7 +143,7 @@ re-estimation.
 # minimum number of sims should be 1E5 for 'power', 1E6 sims for 'alpha'
 power.2stage.ssr(alpha=0.05, n1=10, CV=0.245, GMR=1, pmethod="ls", blind=TRUE,
                  theta0=1.25, nsims=1E4)
-# computation time ~ 7 sec if 1E6 sims were used with pmethod="ls".
-# should give the maximum alpha-inflation ~ 0.073 observed in Golkowski et al.
+# computation time ~ 5 secs if 1E6 sims were used with pmethod="ls"
+# should give the maximum alpha-inflation ~ 0.0723 observed in Golkowski et al.
 # for blinded sample size re-estimation
 }
