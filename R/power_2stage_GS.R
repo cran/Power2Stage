@@ -1,5 +1,6 @@
 # --------------------------------------------------------------------------
 # power (or alpha) of 2-stage group sequential 2x2 crossover studies 
+# with no sample size adaption (n1, n2 predefined)
 #
 # author D.Labes
 # --------------------------------------------------------------------------
@@ -7,7 +8,7 @@
 
 power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1, 
                             theta2,  fCrit=c("PE","CI"), fClower, fCupper, 
-                            nsims=1e5, setseed=TRUE, print=TRUE, details=TRUE)
+                            nsims, setseed=TRUE, print=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")
@@ -22,6 +23,10 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   
   if (missing(theta0)) theta0 <- 0.95
 
+  if(missing(nsims)){
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6 else  nsims <- 1E5
+  }
+  
   fCrit <- match.arg(fCrit)
   if (missing(fClower) & missing(fCupper))  fClower <- 0 # no futility crit.
   if (fClower<0) fClower <- 0 # silently correct it
@@ -29,7 +34,7 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
 
   
-  if(print & details){
+  if(details){
     cat(nsims, "sims. Stage 1")
   }
   # start timer
@@ -91,7 +96,7 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   nsims2  <- sum(s2)
 
   # time for stage 1
-  if(print & details){
+  if(details){
     cat(" - Time consumed (sec):\n")
     print(proc.time()-ptm)
   }
@@ -135,38 +140,24 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
 
   # the return list
   res <- list(alpha=alpha, CV=CV, n=n, theta0=exp(mlog), theta1=theta1, 
-              theta2=theta2, fCrit=fCrit, fClower=fClower, fCupper=fCupper,
+              theta2=theta2, fCrit=fCrit, fCrange=c(fClower, fCupper),
               nsims=nsims,
               # results 
               pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims,
               pct_s2=100*length(BE[stage==2])/nsims
               # mean N?, median?
               )
-  # output
-  if (print) {
-    if (details){
-      cat("Total time consumed (sec):\n")
-      print(proc.time()-ptm)
-      cat("\n")
-    }
-    cat("Group sequential (2-stage) crossover design\n")
-    cat("alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("CV= ",CV,"; n(stage 1, stage 2)= ", n[1]," " , n[2], "\n", sep="")
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    if (fCrit=="PE"){
-      cat("Futility criterion: PE outside", fClower,"...",fCupper, "\n")
-    } else {
-      cat("Futility criterion: CI outside", fClower,"...",fCupper, "\n")
-    }
-    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)    = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
-    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
+  
+  # histogram data or table data are not available here
+  if (details){
+    cat("Total time consumed (sec):\n")
+    print(proc.time()-ptm)
     cat("\n")
-  } 
+  }
+  
+  # output is now via S3 print method
 
-  if (print) return(invisible(res)) else return(res)
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function

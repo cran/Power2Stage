@@ -23,7 +23,7 @@
   # seems Golkowski has used simple round
   n0 <- steps*ceiling(n0/steps)
   # return Inf if diffm outside
-  ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
+  n0 <- ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
   
   return(n0)
   
@@ -89,7 +89,7 @@
   # make an even multiple of step (=2 in case of 2x2 cross-over)
   n0 <- steps*trunc(n0/steps)
   # return Inf if diffm on or outside BE acceptance range
-  ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
+  n0 <- ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
   
   return(n0)
 }
@@ -121,7 +121,7 @@
   # make an even multiple of steps (=2 in case of 2x2 cross-over)
   n0 <- steps*trunc(n0/steps)
   # return Inf if diffm on or outside BE acceptance range
-  ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
+  n0 <- ifelse ((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, Inf, n0)
   
   return(n0)
   

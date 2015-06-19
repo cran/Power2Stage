@@ -1,3 +1,28 @@
+Version 0.4-1
+2015-06-19
+   - Major rewrite of the power.2stage.xyz() functions wich now return an S3 object
+     of class "pwrtsd". Output is now done more R-like via the S3 print method for 
+     class "pwrtsd". Therefore the print argument is defunc and will be removed 
+     in the next version.  
+     The detail argument has now default=FALSE. Thus be patient if you simulate
+     for alpha with 1 Mio sims.
+   - The power.2stage.xyz() functions (with exception of power.2stage.GS()) now
+     return a component ntable, a 'table' object for summarizing the discrete
+     distribution of ntotal. The nhist component was removed.
+   - The default of fClower in case of fCrit="PE" was changed to 0.8 in function
+     power.2stage.fC().
+   - The nsims argument if missing is now set to 1E6 if you simulate for alpha
+     (i.e. with theta0 at border or outside acceptance range theta1 ... theta2)
+     and to 1E5 otherwise
+Version 0.3-2
+2015-06-10 released to alpha tester(s) only
+   - The power.2stage.yy() functions (with exception of power.2stage.GS() now 
+     return a component nhist with class "histogram" which can be used with 
+     plot() to visualize the distribution of Ntotal (suggested by H. Schuetz)
+   - Slight improvements and typo fixes in man pages
+   - Handling of non-integer df's in power.2stage.p() in case of Welch's test
+     changed (now no truncation)
+   - power.2stage.fC() now has also power calculation method "shifted" implemented
 Version 0.3-1
 2015-01-24  (dedicated to my brothers Stefan's 50 birthday)
    - Major code revision to reflect the internal changes in upcoming 

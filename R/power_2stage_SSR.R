@@ -15,14 +15,14 @@ reqN2CV <- function(alpha=0.05, targetpower=0.8, theta0=1., theta1=0.8, n)
 # author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("C:/Users/dlabes/workspace/Power2Stage/R/sampsiz.R")
+# source("C:/Users/dlabes/workspace/Power2Stage/R/sampsiz2.R")
 # source("C:/Users/dlabes/workspace/Power2Stage/R/power.R")
 
 power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8, 
                              pmethod=c("nct","exact", "shifted","ls"),
                              blind=FALSE, min.n=0, max.n=Inf, 
                              theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95), 
-                             nsims=1e5, setseed=TRUE, print=TRUE, details=TRUE)
+                             nsims, setseed=TRUE, print=TRUE, details=FALSE)
 { # seems to give errors if alpha is a vector
   alpha <- alpha[1L]
   
@@ -42,13 +42,18 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   
   if (missing(theta0)) theta0 <- GMR
   
-  if (n1>max.n) stop("max.n<n1 doestn't make sense!")
-  if (min.n!=0 & min.n<n1) stop("min.n<n1 doestn't make sense!")
+  if (n1>max.n) stop("max.n < n1 doestn't make sense!")
+  if (min.n!=0 & min.n<n1) stop("min.n < n1 doestn't make sense!")
+  
+  if(missing(nsims)){
+    nsims <- 1E5
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6
+  }
   
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
-  if(print & details){
+  if(details){
     cat(nsims,"sims. Stage 1")
   }
   # start timer
@@ -85,7 +90,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   # unblind
   if (!blind) s2os <- mses
 
-  if(print & details){
+  if(details){
     # time for stage 1 sims
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),2))
@@ -100,7 +105,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   if(pmethod!="ls"){
     pwr <- .calc.power(alpha=alpha, ltheta1=ltheta1, ltheta2=ltheta2, 
                        diffm=lGMR, sem=sqrt(bk*s2os/n1), df=df, method=pmethod)
-    if(print & details){
+    if(details){
       cat("Sample sizes (", sum(pwr<targetpower),
           " studies) will be re-estimated.\n", sep="")
       cat("May need some time.\n")
@@ -109,7 +114,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
     # don't have power for large sample approx.
     # moreover ssr is so fast that we don't need the power step
     pwr  <- rep(0, times=nsims)
-    if(print & details){
+    if(details){
       cat("Sample sizes will be re-estimated.\n")
       cat("May need some time.\n")
     }
@@ -147,7 +152,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   # do not fall below n1
   n2 <- ifelse(n2<0, 0, n2)
 
-  if(print & details){
+  if(details){
     cat("Time consumed (secs):\n")
     print(round((proc.time()-ptms),1))
   }
@@ -189,45 +194,28 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   rm(lower, upper, hw)
 
   # the return list
-  res <- list(alpha=alpha, CV=CV, n1=n1, GMR=GMR, targetpower=targetpower, 
+  res <- list(method="SSR",
+              alpha=alpha, CV=CV, n1=n1, GMR=GMR, targetpower=targetpower, 
               pmethod=pmethod, theta0=theta0, theta1=theta1, theta2=theta2, 
-              max.n=max.n, min.n=min.n, nsims=nsims,
+              max.n=max.n, min.n=min.n, blind=blind, nsims=nsims,
               # results 
               pBE=sum(BE)/nsims, 
               #pBE_s1 ?
               pct_s2=100*length(ntot[ntot>n1])/nsims, 
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
-  # output
-  if (print) {
-    if (details){
-      cat("Total time consumed (secs):\n")
-      print(round((proc.time()-ptm),1))
-      cat("\n")
-    }
-    if(blind) blinded <- "blinded " else blinded <- ""
-    cat("2-stage design with ", blinded, "sample size re-estimation\n", sep="")
-    cat("Nominal alpha =", alpha, "\n")
-    cat("Sample size based on power calculated via", pmethod, "method\n")
-    cat("with GMR =", GMR,"and targetpower =", targetpower,"\n")
-    if(is.finite(max.n)){
-      cat("Maximum sample size max.n = ",max.n,"\n", sep="")
-    }
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    cat("CV= ", CV,"; n(stage 1) = ", n1,"\n", sep="")
-    
-    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)   = ", res$pBE,"\n", sep="")
-    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
-    cat("\nDistribution of n(total)\n")
-    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
-        res$nrange[2],")\n", sep="")
-    cat("- percentiles\n")
-    print(res$nperc)
-    cat("\n")
-  } 
   
-  if (print) return(invisible(res)) else return(res)
+  # return a table object as summary of ntot distribution
+  res$ntable <- table(ntot)
+  
+  if (details){
+    cat("Total time consumed (secs):\n")
+    print(round((proc.time()-ptm),1))
+    cat("\n")
+  }
+  
+  # output is now via S3 print method
+
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function

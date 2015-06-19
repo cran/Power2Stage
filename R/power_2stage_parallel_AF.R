@@ -2,6 +2,7 @@
 # power (or alpha) of 2-stage studies with a 2-group parallel desig according 
 # to Potvin et. al. # methods "B" and "C", modified to include a futility 
 # criterion Nmax and modified to use PE of stage 1 in sample size estimation
+#
 # variant of power.2stage.p() wich calculates power always via pooled t-test
 # formulas according to the fuglsang 2014 paper
 #
@@ -14,7 +15,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
                              pmethod=c("shifted", "nct", "exact"), 
                              usePE=FALSE, Nmax=Inf, test=c("welch", "t-test", "anova"),
                              theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95),  
-                             nsims=1e5, setseed=TRUE, print=TRUE, details=TRUE)
+                             nsims, setseed=TRUE, print=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV(s) must be given!")
   if (any(CV<=0))  stop("CV(s) must be >0!")
@@ -48,6 +49,11 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
   if (missing(theta0)) theta0 <- GMR
   
   if (n1>Nmax) stop("n1>Nmax doestn't make sense!")
+
+  if(missing(nsims)){
+    nsims <- 1E5
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6
+  }
   
   # check if Potvin B or C
   method  <- match.arg(method)
@@ -56,7 +62,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
-  if(print & details){
+  if(details){
     cat(nsims,"sims. Stage 1")
   }
   # start timer
@@ -105,6 +111,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
       # Welch's t-test
       se  <- sqrt(varsT/nT + varsR/nR)
       dfs <- (varsT/nT + varsR/nR)^2/(varsT^2/nT^2/(nT-1)+varsR^2/nR^2/(nR-1))
+      # dfs <- trunc(dfs)
       hw  <- qt(1-alpha0,dfs)*se
     }
     lower <- pes - hw
@@ -130,6 +137,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
     se  <- sqrt(varsT_tmp/nT + varsR_tmp/nR)
     dfs <- (varsT_tmp/nT + varsR_tmp/nR)^2/(varsT_tmp^2/nT^2/(nT-1) + 
                                     varsR_tmp^2/nR^2/(nR-1))
+    # dfs <- trunc(dfs)
     hw  <- qt(1-alpha[1],dfs)*se
     rm(se, dfs)
   }
@@ -158,7 +166,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
   rm(BE1, hw, lower, upper, pes_tmp, Vpooled_tmp)
   
   # time for stage 1
-  if(print & details){
+  if(details){
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),1))
   }
@@ -171,7 +179,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
   
   # Maybe we are already done with stage 1
   if(length(pes_tmp)>0){
-    if(print & details){
+    if(details){
       cat("Keep calm. Sample sizes for stage 2 (", length(pes_tmp),
           " studies)\n", sep="")
       cat("will be estimated. May need some time.\n")
@@ -213,7 +221,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
     
     n2  <- ifelse(nts>n1, nts - n1, 0)
     
-    if(print & details){
+    if(details){
       cat("Time consumed (secs):\n")
       print(round((proc.time()-ptms),1))
     }
@@ -297,6 +305,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
       # Welch's t-test
       se  <- sqrt(varsT/nT + varsR/nR)
       dfs <- (varsT/nT + varsR/nR)^2/(varsT^2/nT^2/(nT-1)+varsR^2/nR^2/(nR-1))
+      #dfs <- trunc(dfs)
       hw  <- qt(1-alpha[2],dfs)*se
       rm(se, dfs)
     }
@@ -313,7 +322,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
   # take care of memory
   rm(pes_tmp, pes)
   # the return list
-  res <- list(design="2-group parallel", method=method, 
+  res <- list(design="2 parallel groups", method=method, 
               alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, CV=CV, n1=n1, 
               GMR=GMR, test=test, targetpower=targetpower, pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, 
@@ -323,52 +332,20 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
               # Dec 2014: meaning of pct_s2 changed
               pct_s2=100*sum(ntot>n1)/nsims, 
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
-  # output
-  if (print) {
-    if (details){
-      cat("Total time consumed (secs):\n")
-      print(round((proc.time()-ptm),1))
-      cat("\n")
-    }
-    cat("2-group parallel 2-stage design\n")
-    cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("CI's based on", ifelse(test=="welch","Welch's t-test",test),"\n")
-    cat("Target power in power monitoring and sample size est. = ", 
-        targetpower,"\n",sep="")
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    if (length(CV)==2){
-      cat("CVs = "); cat(CV, sep=", ")
-    } else {
-      cat("CV = ", CV, sep="")
-    }
-    cat("; n(stage 1) = ", n1, sep="")
-    cat("; GMR=", GMR, "\n")
-    if(usePE) {
-      cat("PE and variances of stage 1 in sample size est. used\n")
-    } else {
-      cat("GMR =",GMR, "and variances of stage 1 in sample size est. used\n")
-    }
-    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
-    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)    = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
-    if (res$pct_s2>0.01){
-      cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
-    } else {
-      cat("Studies in stage 2 = ", round(res$pct_s2,4), "%\n", sep="")
-    }
-    cat("\nDistribution of n(total)\n")
-    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
-        res$nrange[2],")\n", sep="")
-    cat("- percentiles\n")
-    print(res$nperc)
-    cat("\n")
-  } 
   
-  if (print) return(invisible(res)) else return(res)
+  # table object summarizing the discrete distri of ntot
+  # only if usePE=FALSE or if usePE=TRUE then Nmax must be finite
+  # or return it always?
+  if (usePE==FALSE | (usePE==TRUE & is.finite(Nmax))){
+    res$ntable <- table(ntot)
+  }
+  if (details){
+    cat("Total time consumed (secs):\n")
+    print(round((proc.time()-ptm),1))
+    cat("\n")
+  }
+    
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function

@@ -7,14 +7,12 @@
 # author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("C:/Users/dlabes/workspace/PowerTOST/R/sampsiz.R")
-# source("C:/Users/dlabes/workspace/PowerTOST/R/power.R")
 
 power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.0294),
                             n1, CV, targetpower=0.8, pmethod=c("nct","exact"),
                             Nmax=150, theta0, theta1, theta2, 
-                            npct=c(0.05, 0.5, 0.95), nsims=1e5, setseed=TRUE, 
-                            print=TRUE, details=TRUE)
+                            npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
+                            print=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")
@@ -29,6 +27,11 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   if (missing(theta0)) theta0 <- 0.95
   
   if (n1>Nmax) stop("n1>Nmax doestn't make sense!")
+  
+  if(missing(nsims)){
+    nsims <- 1E5
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6
+  }
   
   # check if Potvin B or C
   method  <- match.arg(method)
@@ -222,7 +225,8 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   # take care of memory
   rm(pes_tmp, mses_tmp)
   # the return list
-  res <- list(method=method, alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, 
+  res <- list(design="2x2 crossover", method=method, modified="KM",
+              alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, 
               CV=CV, n1=n1, targetpower=targetpower, pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, Nmax=Nmax, 
               nsims=nsims,
@@ -231,42 +235,17 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
               pct_s2=100*length(BE[stage==2])/nsims, 
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct)
               )
-  # output
-  if (print) {
-    if (details){
-      if(nsims<=1E5 & pmethod!="exact"){
-        cat("Total time consumed (secs):\n")
-        print(round((proc.time()-ptm),1))
-      } else {
-        cat("Total time consumed (min):\n")
-        print(round((proc.time()-ptm)/60,2))
-      }
-      cat("\n")
-    }
-    cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("Modification(s) according to Karalis/Macheras\n")
-    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
-    cat("CV = ",CV,"; n(stage 1) = ", n1, "\n", sep="")
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    cat("PE and mse of stage 1 in power steps and sample size est. used\n") 
-    cat("Target power in power monitoring and sample size est. = ", 
-        targetpower,"\n",sep="")
-    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)    = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
-    cat("Studies in stage 2= ", round(res$pct_s2,2), "%\n", sep="")
-    cat("\nDistribution of n(total)\n")
-    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
-        res$nrange[2],")\n", sep="")
-    cat("- percentiles\n")
-    print(res$nperc)
-    cat("\n")
-  } 
 
-  if (print) return(invisible(res)) else return(res)
+  # table object summarizing the discrete distri of ntot
+  # only given back if usePE=FALSE or if usePE=TRUE then Nmax must be finite
+  # since here usePE is always TRUE this reduces to is.finite Nmax
+  if (is.finite(Nmax)){
+    res$ntable <- table(ntot)
+  }
+  
+  # output is now done via S3 print method
+
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function

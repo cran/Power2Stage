@@ -3,7 +3,7 @@
 # for 2x2 crossover or 2-group parallel
 # power via nct or shifted t approximation or exact
 #
-# Version with attempt to vectorize sample size w.r.t mse and/or ltheta0
+# Version with vectorize sample size w.r.t mse and/or ltheta0
 #
 # author D. Labes Jan 2015
 # -------------------------------------------------------------------------
@@ -16,31 +16,35 @@
 {
 
   # se and ltheta0/diffm must have the same length to vectorize propperly!
-  if (length(mse)==1) mse=rep(mse, times=length(ltheta0))
-  if (length(ltheta0)==1) ltheta0=rep(ltheta0, times=length(mse))
+  if (length(mse)==1)     mse <- rep(mse, times=length(ltheta0))
+  if (length(ltheta0)==1) ltheta0 <- rep(ltheta0, times=length(mse))
   
   # return 'Inf' if ltheta0 not between or very near to ltheta1, ltheta2
   ns <- ifelse((ltheta0-ltheta1)<1.25e-5 | (ltheta2-ltheta0)<1.25e-5, Inf, 0)
 
   # design characteristics for 2-group parallel and 2x2 crossover design
-  # df for the design as an unevaluated expression
-  #dfe   <- parse(text="n-2", srcfile=NULL)
   steps <- 2     # stepsize for sample size search
   nmin  <- 4     # minimum n
   
-  se     <- sqrt(mse[is.finite(ns)])
-  diffm  <- ltheta0[is.finite(ns)]
+  se    <- sqrt(mse[is.finite(ns)])
+  diffm <- ltheta0[is.finite(ns)]
   
   # start value from large sample approx. (hidden func.)
-  # Jan 2015 changed to pure Zhang's formula
+  # Jan 2015 changed to modified Zhang's formula
   # gives at least for 2x2 the best estimate (max diff to n: +-4)
   n <- .sampleN0_3(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   n <- ifelse(n<nmin, nmin, n)
   
   if(method=="ls") return(n)
   
-  df <- n-2
-  pow <- .calc.power(alpha, ltheta1, ltheta2, diffm, sem=se*sqrt(bk/n), df, method)
+  # degrees of freedom as expression
+  # n-2 for 2x2 crossover and 2-group parallel design
+  dfe <- parse(text="n-2", srcfile=NULL)
+  # or should that read n-3? see Kieser/Rauch
+  #dfe <- parse(text="n-3", srcfile=NULL)
+  
+  df   <- eval(dfe)
+  pow  <- .calc.power(alpha, ltheta1, ltheta2, diffm, sem=se*sqrt(bk/n), df, method)
   iter <- rep(0, times=length(se)) 
   imax <- 50
   # iter>50 is emergency brake
@@ -54,7 +58,7 @@
 #    down <- TRUE
     n[index]    <- n[index]-steps     # step down if start power is to high
     iter[index] <- iter[index]+1
-    df   <- n-2
+    df <- eval(dfe)
     pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index], 
                                sem=se[index]*sqrt(bk/n[index]), df[index],
                                method)
@@ -69,7 +73,7 @@
 #    up   <- TRUE; down <- FALSE
     n[index] <- n[index]+steps
     iter[index] <- iter[index]+1
-    df   <- n-2
+    df <- eval(dfe)
     pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index], 
                                sem=se[index]*sqrt(bk/n[index]), df[index], 
                                method)

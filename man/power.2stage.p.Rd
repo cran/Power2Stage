@@ -5,10 +5,11 @@
 Power calculation of adaptive 2-stage BE studies with 2-group parallel design
 }
 \description{
-This functions calculate the 'empirical' power of 2-stage BE studies according
-to A. Fuglsang via simulations. The Potvin decision schemes are modified to 
-include a futility criterion Nmax and to allow the sample size estimation 
-step to be done with point estimator & variabilities from stage 1.\cr\cr
+This functions calculate the 'empirical' power of 2-stage BE studies with 
+2 parallel groups according to A. Fuglsang via simulations. 
+The Potvin decision schemes are modified to include a futility criterion Nmax 
+and to allow the sample size estimation step to be done with point estimator & 
+variabilities from stage 1.\cr\cr
 Function \code{power.2stage.pAF()} performes exactly as described in the
 paper Fuglsang 2014, namely the power monitoring steps and the sample size
 estimation are based always on the pooled t-test.\cr
@@ -21,15 +22,15 @@ power.2stage.p(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294),
                n1, GMR, CV, targetpower = 0.8, 
                pmethod = c("nct", "exact", "shifted"), 
                usePE = FALSE, Nmax = Inf, test = c("welch", "t-test", "anova"), 
-               theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
-               nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
+               theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), nsims, 
+               setseed = TRUE, print = TRUE, details = FALSE)
 
 power.2stage.pAF(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
                  n1, GMR, CV, targetpower = 0.8, 
                  pmethod = c("shifted", "nct", "exact"), 
                  usePE = FALSE, Nmax = Inf, test = c("welch", "t-test", "anova"), 
-                 theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
-                 nsims = 1e+05, setseed = TRUE, print = TRUE, details = TRUE)
+                 theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), nsims, 
+                 setseed = TRUE, print = TRUE, details = FALSE)
 }
 \arguments{
   \item{method}{
@@ -124,24 +125,26 @@ Set this argument to \code{FALSE} to view the variation in power between
 different runs.
 }
   \item{print}{
-If \code{TRUE} (default) the function prints its results.\cr 
-If \code{FALSE} only the list with the results will be returned (see value). 
+This argument is now defunct since printing is done via S3 method print.\cr  
+It is retained for compatibility but will be removed in the next version. 
 }
   \item{details}{
-If \code{TRUE} (default) the function prints the results of time measurements
-of the simulation steps. 
+If set to \code{TRUE} the function prints the results of time measurements
+of the simulation steps. Default is \code{FALSE}.
 }
 }
 \details{
 The calculations follow in principle the simulations as described in Fuglsang A. 
-2014\cr
+(2014).\cr
 The underlying subject data are assumed to be evaluated after log-transformation.
 But instead of simulating subject data the statistics (mean and variance of Test
 and Reference of stage 1 and stage 2) are simulated via their associated 
 distributions (normal and chi-squared distri's).
 }
 \value{
-Returns a list with all the input arguments and results as components.\cr
+Returns an object of class "pwrtsd" with all the input arguments and results 
+as components.\cr
+The class "pwrtsd" has an S3 print method.\cr
 The results are in the components:
 \item{pBE}{Contains the ratio of studies found BE.}
 \item{pBE_s1}{Ratio of studies found BE in stage 1.}
@@ -149,6 +152,10 @@ The results are in the components:
 \item{nmean}{Mean of n(total).}
 \item{nrange}{Range (min, max) of n(total).}
 \item{nperc}{Percentiles of the distribution of n(total).}
+\item{ntable}{Object of class "table" summarizing the discrete distribution of 
+n(total) via its distinct values and counts of occurences of these values.
+This component is only given back if \code{usePE==FALSE} or otherwise if 
+\code{is.finite(Nmax)}, i.e. a futility criterion is used.}
 }
 \references{
 Fuglsang A.\cr

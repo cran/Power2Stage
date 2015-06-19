@@ -6,17 +6,17 @@
 # author D.L.
 # --------------------------------------------------------------------------
 # require(PowerTOST)
-# source("./R/sampsiz.R")
 # source("./R/sampsiz2.R")
 # source("./R/sampsiz_n0.R")
 # source("./R/power.R")
 
 power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.0294), 
-                            n1, CV, GMR, targetpower=0.8, pmethod=c("nct","exact"), 
+                            n1, CV, GMR, targetpower=0.8, 
+                            pmethod=c("nct","exact", "shifted"), 
                             usePE=FALSE, powerstep=TRUE, min.n2=0, fCrit=c("PE","CI"), 
                             fClower, fCupper, theta0, theta1, theta2, 
-                            npct=c(0.05, 0.5, 0.95), nsims=1e5, setseed=TRUE, 
-                            print=TRUE, details=TRUE)
+                            npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
+                            print=TRUE, details=FALSE)
 { 
   # chek method, check futility criterion
   method <- match.arg(method)
@@ -38,8 +38,12 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   
   if (missing(theta0)) theta0 <- GMR
   
+  if(missing(nsims)){
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6 else  nsims <- 1E5
+  }
+  
   if(fCrit=="PE"){
-    if (missing(fClower) & missing(fCupper))  fClower <- 0.825
+    if (missing(fClower) & missing(fCupper))  fClower <- 0.8
     if (missing(fClower) & !missing(fCupper)) fClower <- 1/fCupper
     if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
   }
@@ -53,7 +57,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
 #    stop("Futility range for PE must be inside BE acceptance range!")
 #  }
 
-  if(min.n2!=0 & min.n2<2) stop("min.n2 has to be at least +2.")
+  if(min.n2!=0 & min.n2<2) stop("min.n2 has to be at least +2 if >0.")
   # make even (round up)
   if( min.n2%%2 != 0) {
     min.n2 <- min.n2 + min.n2%%2
@@ -63,7 +67,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
-  if(print & details){
+  if(details){
     cat(nsims,"sims. Stage 1")
   }
   # start timer
@@ -152,7 +156,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   rm(hw, lower, upper, BE1, outside)
   
   # time for stage 1
-  if(print & details){
+  if(details){
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),1))
   }
@@ -166,7 +170,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   
   # Maybe we are already done with stage 1
   if (length(pes_tmp)>0) {
-    if (print & details) {
+    if (details) {
       cat("Keep calm. Sample sizes for stage 2 (", length(pes_tmp),
           " studies)\n", sep="")
       cat("will be estimated. May need some time.\n")
@@ -204,7 +208,7 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
     # assure a min.n2
     n2 <- ifelse(n2<min.n2, min.n2, n2)
     
-    if(print & details){
+    if(details){
       cat("Time consumed (secs):\n")
       print(round((proc.time()-ptms),1))
     }
@@ -262,56 +266,34 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   # take care of memory
   rm(pes_tmp, mses_tmp)
   # the return list
-  res <- list(method=paste0(method,"f"), alpha=alpha, CV=CV, n1=n1, GMR=GMR, 
+  res <- list(design="2x2 crossover",
+              method=method, alpha=alpha, CV=CV, n1=n1, GMR=GMR, 
               targetpower=targetpower, pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, usePE=usePE, 
-              powerstep=powerstep, fCrit=fCrit,
-              fCrange=c(fClower, fCupper), nsims=nsims,
+              powerstep=powerstep, min.n2=min.n2,
+              fCrit=fCrit, fCrange=c(fClower, fCupper), 
+              nsims=nsims,
               # results 
               pBE=sum(BE)/nsims, pBE_s1=sum(BE[ntot==n1])/nsims,
               # dec 2014 meaning of pct_s2 changed
               pct_s2=100*sum(ntot>n1)/nsims, 
               nmean=mean(ntot), nrange=range(ntot), 
               nperc=quantile(ntot, p=npct))
-  # output
-  if (print) {
-    if (details){
-      cat("Total time (secs):\n")
-      print(round((proc.time()-ptm),1))
-      cat("\n")
-    }
-    cat("Method ",method,"f:", sep="")
-    if(method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2)=", alpha[1], alpha[2], "\n")
-    if (powerstep) cat("Interim power monitoring step included.\n") else 
-      cat("No interim power monitoring step used.\n")
-    if (powerstep){
-      cat("Target power in power monitoring and sample size est. = ", 
-          targetpower,"\n",sep="")
-    } else {
-      cat("Target power in sample size est. = ", targetpower,"\n",sep="")
-    }  
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    cat("CV = ",CV,"; n(stage 1) = ",n1,"; GMR = ",GMR, "\n", sep="")
-    if(usePE) cat("PE and mse of stage 1 in sample size est. used.\n") else {
-      cat("GMR =",GMR, "and mse of stage 1 in sample size est. used.\n")}
-    cat("Futility criterion for ", fCrit," = outside ", fClower, " ... ",
-        fCupper, "\n", sep="")
-
-    cat("\n",nsims," sims at theta0= ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)    = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
-    cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
-    cat("\nDistribution of n(total)\n")
-    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
-        res$nrange[2],")\n", sep="")
-    cat("- percentiles\n")
-    print(res$nperc)
+  
+  # table object summarizing the discrete distri of ntot
+  # only if usePE=FALSE or if usePE=TRUE then a futility range must be used
+  # or return it always?
+  if (usePE==FALSE | (usePE==TRUE & fClower>0 & is.finite(fCupper))){
+    res$ntable <- table(ntot)
+  }
+  
+  if (details){
+    cat("Total time (secs):\n")
+    print(round((proc.time()-ptm),1))
     cat("\n")
-  } 
-  #what shall we return?
-  if (print) return(invisible(res)) else return(res)
+  }
+  
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function

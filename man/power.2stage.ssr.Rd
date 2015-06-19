@@ -12,8 +12,8 @@ The sample size re-estimation may be done blinded or not blinded.
 power.2stage.ssr(alpha = 0.05, n1, GMR, CV, targetpower = 0.8, 
                 pmethod = c("nct", "exact", "shifted", "ls"), blind = FALSE, 
                 min.n = 0, max.n = Inf, theta0, theta1, theta2, 
-                npct = c(0.05, 0.5, 0.95), nsims = 1e+05, setseed = TRUE, 
-                print = TRUE, details = TRUE)
+                npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, 
+                print = TRUE, details = FALSE)
 }
 \arguments{
   \item{alpha}{
@@ -73,8 +73,10 @@ Defaults to \code{c(0.05, 0.5, 0.95)} to obtain the 5\% and 95\% percentiles
 and the median.
 }
   \item{nsims}{
-Number of studies to simulate. Defaults to 1E+05 = 100 000.\cr
-Set this to 1E+06 = 1 million if you are calculating for 'alpha'.
+Number of studies to simulate.\cr 
+If missing \code{nsims} is set to 1E+05 = 100 000 or to 1E+06 = 1 Mio if you are 
+calculating 'alpha', i.e. with \code{theta0} at border or outside acceptance range 
+\code{theta1} ... \code{theta2}.
 }
   \item{setseed}{
 Simulations are dependent on the starting point of the (pseudo) random number 
@@ -84,12 +86,12 @@ Set this argument to \code{FALSE} to view the variation in power between
 different runs.
 }
   \item{print}{
-If \code{TRUE} (default) the function prints its results.\cr 
-If \code{FALSE} only the list with the results will be returned (see value). 
+This argument is now defunct since printing is done via S3 method print.\cr  
+It is retained for compatibility but will be removed in the next version. 
 }
   \item{details}{
-If \code{TRUE} (default) the function prints the results of time measurements
-of the simulation steps. 
+If set to \code{TRUE} the function prints the results of time measurements
+of the simulation steps. Default is \code{FALSE}.
 }
 }
 \details{
@@ -102,7 +104,9 @@ simulated via their associated distributions (normal and chi-squared
 distri's).
 }
 \value{
-Returns a list with all the input arguments and results as components.\cr
+Returns an object of class "pwrtsd" with all the input arguments and results 
+as components.\cr
+The class "pwrtsd" has a S3 print method.\cr
 The results are in the components:
 \item{pBE}{Contains the ratio of studies found BE.}
 \item{pBE_s1}{Ratio of studies found BE in stage 1.}
@@ -110,6 +114,8 @@ The results are in the components:
 \item{nmean}{Mean of n(total).}
 \item{nrange}{Range (min, max) of n(total).}
 \item{nperc}{Percentiles of the distribution of n(total).}
+\item{ntable}{Object of class "table" summarizing the discrete distribution of 
+n(total) via its unique values and counts of occurences of these values.}
 }
 \references{
 Golkowski D, Friede T, Kieser M\cr
@@ -132,8 +138,8 @@ D. Labes
 The computation time is in the magnitude of a few seconds for 100 000 sims on my 
 machine (Intel core i7 2.5 GHz, 12GB RAM) if the nct approximation is used. 
 Thus be a bit patient if you simulate for 'alpha' with 1 Mio sims.\cr
-Using the crude \code{pmethod="ls"} results in a nearly immediate sample size 
-re-estimation.
+Using the crude \code{pmethod="ls"} on the other hand results in a nearly immediate 
+sample size re-estimation.
 }
 \seealso{
 \code{\link{power.2stage}} for adaptive 2-stage studies with interim BE decision.
@@ -145,5 +151,5 @@ power.2stage.ssr(alpha=0.05, n1=10, CV=0.245, GMR=1, pmethod="ls", blind=TRUE,
                  theta0=1.25, nsims=1E4)
 # computation time ~ 5 secs if 1E6 sims were used with pmethod="ls"
 # should give the maximum alpha-inflation ~ 0.0723 observed in Golkowski et al.
-# for blinded sample size re-estimation
+# for blinded sample size re-estimation if nsims=1E6 is used.
 }

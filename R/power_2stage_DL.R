@@ -1,7 +1,9 @@
 # --------------------------------------------------------------------------
 # power (or alpha) of 2-stage studies according to Potvin et. al. 
-# methods "B" and "C", modified to include a futility criterion Nmax
-# modified to use PE of stage 1 in sample size estimation
+# methods "B" and "C", 
+# - modified to include a futility criterion Nmax
+# - modified to use PE of stage 1 in sample size estimation if PE1 is
+#   outside GMR and 1/GMR
 #
 # Author D.L.
 # --------------------------------------------------------------------------
@@ -10,10 +12,10 @@
 # source("./R/sampsiz_n0.R")
 # source("./R/power.R")
 
-power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
+power.2stage.DL <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
                          n1, GMR, CV, targetpower=0.8, 
                          pmethod=c("nct","exact", "shifted"),
-                         usePE=FALSE, Nmax=Inf, min.n2=0, theta0, theta1, theta2,  
+                         Nmax=Inf, min.n2=0, theta0, theta1, theta2,  
                          npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
                          print=TRUE, details=FALSE)
 {
@@ -33,7 +35,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   
   if (missing(theta0)) theta0 <- GMR
   
-  if (n1>Nmax) stop("n1>Nmax doestn't make sense!")
+  if (n1>Nmax) stop("n1>Nmax doesn't make sense!")
   
   if(missing(nsims)){
     nsims <- 1E5
@@ -152,26 +154,15 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     s2       <- rep.int(2, times=length(mses_tmp))
     #------ sample size for stage 2 ---------------------------------------
     ptms <- proc.time()
-    if (usePE){
-      # use mse1 & pe1 like in the paper of Karalis/Macheras
-      # sample size function returns Inf if pe1 is outside acceptance range
-#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
-#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-#                                  ltheta1=ltheta1, ltheta2=ltheta2,
-#                                  method=pmethod, bk=2))
-      nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp,
-                      mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
-                      method=pmethod)
-    } else {
-      # use mse1 & GMR to calculate sample size (original Potvin)
-#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, 
-#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-#                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-#                                  method=pmethod, bk=2))
-      nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=lGMR,
-                      mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
-                      method=pmethod)
-    }
+    # use mse1 & pe1 or mse1 & GMR
+    # sample size function returns Inf if pe1 is outside acceptance range
+    #browser()
+    # pes_tmp is needed later, thus create another variable
+    pes_tmp2 <- ifelse(pes_tmp>=lGMR & pes_tmp<=-lGMR, lGMR, pes_tmp )
+    nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp2,
+                    mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, method=pmethod)
+    rm(pes_tmp2)
+    
     n2 <- ifelse(nt>n1, nt - n1, 0)
     # assure a min.n2
     n2 <- ifelse(n2<min.n2, min.n2, n2)
@@ -225,7 +216,8 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     lower <- pe2 - hw
     upper <- pe2 + hw
     BE2   <- lower>=ltheta1 & upper<=ltheta2
-    # combine stage 1 & stage 2
+    #browser()
+    # combine those with stage 1 only & those having stage 2
     ntot[is.na(BE)]  <- nt
     BE[is.na(BE)]    <- BE2
     # done with them
@@ -235,9 +227,10 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   rm(pes_tmp, mses_tmp)
   # the return list
   res <- list(design="2x2 crossover",
-              method=method, alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, 
+              method=method, modified="DL",
+              alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, 
               CV=CV, n1=n1, GMR=GMR, targetpower=targetpower, pmethod=pmethod, 
-              theta0=exp(mlog), theta1=theta1, theta2=theta2, usePE=usePE, 
+              theta0=exp(mlog), theta1=theta1, theta2=theta2, usePE=NULL, 
               Nmax=Nmax, min.n2=min.n2, nsims=nsims,
               # results 
               pBE=sum(BE)/nsims,
@@ -258,9 +251,8 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
 
   # table object summarizing the discrete distri of ntot
   # only if usePE=FALSE or if usePE=TRUE then Nmax must be finite?
-  if (usePE==FALSE | (usePE==TRUE & is.finite(Nmax))){
-    res$ntable <- table(ntot)
-  }
+  #if (is.finite(Nmax))   res$ntable <- table(ntot)
+  res$ntable <- table(ntot)
   
   if (details){
     cat("Total time consumed (secs):\n")

@@ -78,6 +78,7 @@
   }
   pow <- p2-p1
   # due to numeric inaccuracies
+  # do we need that here? paranoia
   pow[pow<0] <- 0
   return( pow )
 }
@@ -119,7 +120,7 @@
   delta1[is.nan(delta1)] <- 0
   delta2[is.nan(delta2)] <- 0
   
-  pow <- pt(-tval-delta2,df) - pt(tval-delta1,df)
+  pow <- pt(-tval-delta2, df) - pt(tval-delta1, df)
   pow[pow<0] <- 0 # this is to avoid neg. power due to approx. (vector form)
   
   return(pow)
@@ -128,8 +129,7 @@
 # function for merging the various power calculations
 .calc.power <- function(alpha=0.05, ltheta1, ltheta2, diffm, sem, df, method="exact")
 { 
-  pow <- switch(
-    method,
+  pow <- switch(method,
     exact=.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
     owenq=.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
     nct=  .approx.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),

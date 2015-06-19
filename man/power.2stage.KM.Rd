@@ -16,7 +16,7 @@ from stage 1 evaluation.
 power.2stage.KM(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.0294),
                 n1, CV, targetpower=0.8, pmethod=c("nct","exact"),
                 Nmax=150, theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95), 
-                nsims=1e5, setseed=TRUE, print=TRUE, details=TRUE)
+                nsims, setseed=TRUE, print=TRUE, details=FALSE)
 }
 \arguments{
   \item{method}{
@@ -77,8 +77,10 @@ Defaults to \code{c(0.05, 0.5, 0.95)} to obtain the 5\% and 95\% percentiles
 and the median.
 }
   \item{nsims}{
-Number of studies to simulate. Defaults to 1E+05 = 100 000.\cr
-Set this to 1E+06 = 1 mio if you are calculating 'alpha'.
+Number of studies to simulate.\cr 
+If missing \code{nsims} is set to 1E+05 = 100 000 or to 1E+06 = 1 Mio if you are 
+calculating 'alpha', i.e. with \code{theta0} at border or outside acceptance range 
+\code{theta1} ... \code{theta2}.
 }
   \item{setseed}{
 Simulations are dependent on the starting point of the (pseudo) random number 
@@ -88,12 +90,12 @@ Set this argument to \code{FALSE} to view the variation in power between
 different runs.
 }
   \item{print}{
-If \code{TRUE} (default) the function prints its results.\cr 
-If \code{FALSE} only the list with the results will be returned (see value). 
+This argument is now defunct since printing is done via S3 method print.\cr  
+It is retained for compatibility but will be removed in the next version. 
 }
   \item{details}{
-If \code{TRUE} (default) the function prints the results of time measurements
-of the simulation steps. 
+If set to \code{TRUE} the function prints the results of time measurements
+of the simulation steps. Default is \code{FALSE}.
 }
 }
 \details{
@@ -109,7 +111,9 @@ size adaption step of the decision schemes are done using the the mse (CV)
 This resembles the methods described in Karalis&Macheras and Karalis.  
 }
 \value{
-Returns a list with all the input arguments and results as components.\cr
+Returns an object of class "pwrtsd" with all the input arguments and results 
+as components.\cr
+The class "pwrtsd" has a S3 print method.\cr
 The results are in the components:
 \item{pBE}{Contains the ratio of studies found BE.}
 \item{pBE_s1}{Ratio of studies found BE in stage 1.}
@@ -117,6 +121,9 @@ The results are in the components:
 \item{nmean}{Mean of n(total).}
 \item{nrange}{Range (min, max) of n(total).}
 \item{nperc}{Percentiles of the distribution of n(total).}
+\item{ntable}{Object of class "table" summarizing the discrete distribution of 
+n(total) via its distinct values and counts of occurences of these values.\cr
+This component is only given back if \code{is.finite(Nmax)}.}
 }
 \references{
 Potvin D et al.\cr

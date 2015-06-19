@@ -15,7 +15,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
                            pmethod=c("nct", "exact", "shifted"), 
                            usePE=FALSE, Nmax=Inf, test=c("welch", "t-test", "anova"),
                            theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95),  
-                           nsims=1e5, setseed=TRUE, print=TRUE, details=TRUE)
+                           nsims, setseed=TRUE, print=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV(s) must be given!")
   if (any(CV<=0))  stop("CV(s) must be >0!")
@@ -56,6 +56,11 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   
   if (n1>Nmax) stop("sum(n1)>Nmax doesn't make sense!")
   
+  if(missing(nsims)){
+    nsims <- 1E5
+    if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6
+  }
+  
   # check if Potvin B or C
   method  <- match.arg(method)
   # check test
@@ -63,7 +68,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
-  if(print & details){
+  if(details){
     cat(nsims,"sims. Stage 1")
   }
   # start timer
@@ -110,9 +115,6 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     # is this also the power of Welch t-test?
     # clear answer: no
     # see http://www.utdallas.edu/~ammann/stat6V99/node2.html
-    pwr <- .calc.power(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, sem=sqrt(Vpooled)*se.fact, df=df,  
-                       method=pmethod)
     # calculate CIs at alpha0 for all
     if (test=="t-test" || test=="anova"){
       pwr <- .calc.power(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2, 
@@ -124,9 +126,11 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
       se  <- sqrt(varsT/nT + varsR/nR)
       dfs <- (varsT/nT + varsR/nR)^2/(varsT^2/nT^2/(nT-1)+varsR^2/nR^2/(nR-1))
       # here we use the Welch's df and se in power
+      # necessary to truncate dfs? in case of pmethod=="exact"?
+      # since OwensQOwen needs integer Df's
+      if(pmethod=="exact") dfs <- trunc(dfs)
       pwr <- .calc.power(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2, 
-                         diffm=lGMR, sem=se, df=trunc(dfs),  
-                         method=pmethod)
+                         diffm=lGMR, sem=se, df=dfs, method=pmethod)
       hw  <- qt(1-alpha0,dfs)*se
     }
     lower <- pes - hw
@@ -152,7 +156,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     se  <- sqrt(varsT_tmp/nT + varsR_tmp/nR)
     dfs <- (varsT_tmp/nT + varsR_tmp/nR)^2/(varsT_tmp^2/nT^2/(nT-1) + 
                                             varsR_tmp^2/nR^2/(nR-1))
-    hw  <- qt(1-alpha[1],dfs)*se
+    hw  <- qt(1-alpha[1], dfs)*se
     # we need dfs and se in following power monitoring step, so don't rm()!
   }
   rm(varsT_tmp, varsR_tmp)
@@ -161,20 +165,22 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   BE1   <- lower>=ltheta1 & upper<=ltheta2
   if (method=="C"){
     #if BE met -> PASS and stop
-    #if not BE -> goto sample size estimation i.e flag BE1 as NA
+    #if not BE -> goto sample size estimation i.e flag BE1 as NA (not yet decided)
     BE1[!BE1] <- NA
   } else { 
-    # method B
-    # evaluate power at alpha[1] and planGMR
+    # method B: evaluate power at alpha[1] and planGMR
     if (test=="t-test" || test=="anova"){
       pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
                          diffm=lGMR, sem=sqrt(Vpooled_tmp)*se.fact, df=df, 
                          method=pmethod)
     } else {
-      # here we use Welch's dfs and se
+      # here we use Welch's dfs and se from above
+      # necessary to truncate dfs? in case of pmethod=="exact"?
+      # since OwensQOwen needs integer Df's
+      if(pmethod=="exact") dfs <- trunc(dfs)
       pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
-                         diffm=lGMR, sem=se, df=trunc(dfs), 
-                         method=pmethod)
+                         diffm=lGMR, sem=se, df=dfs, method=pmethod)
+      #now we re done with them
       rm(se, dfs)
     }  
     # if BE met then decide BE regardless of power
@@ -188,7 +194,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   rm(BE1, hw, lower, upper, pes_tmp, Vpooled_tmp)
   
   # time for stage 1
-  if(print & details){
+  if(details){
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),1))
   }
@@ -201,7 +207,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   
   # Maybe we are already done with stage 1
   if(length(pes_tmp)>0){
-    if(print & details){
+    if(details){
       cat("Keep calm. Sample sizes for stage 2 (", length(pes_tmp),
           " studies)\n", sep="")
       cat("will be estimated. May need some time.\n")
@@ -224,13 +230,14 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     # and always via pooled t-test (otherwise we had a major rework of sampsiz)
     # one correction step with Welch power in case of Welch's
     if (usePE){
-      # use mse1 & pe1 like in the paper of Karalis/Macheras
+      # use mse1 & pe1 in sse like in the paper of Karalis/Macheras
       # sample size function returns Inf if pe1 is outside acceptance range
       nts <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp,
                        mse=Vpooled_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
                        method=pmethod, bk=4)
       # in case of Welch's test the sample size may be too low
-      # thus we raise them
+      # (se & sqrt(Vpooled)*se.fact are same if balanced, but df != dfs)
+      # thus we raise them if necessary
       if (test=="welch"){
         # calculate power
         nT  <- nR <- nts/2
@@ -238,10 +245,13 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
         dfs <- (varsT/nT + varsR/nR)^2/(varsT^2/nT^2/(nT-1) + varsR^2/nR^2/(nR-1))
         # in case of nts==Inf the dfs come out with NaN!
         # se is then zero and pwr comes out with NaN
-        # we are setting the dfs to whatever
+        # we are setting the dfs to whatever not to thow errors
         dfs <- ifelse(!is.finite(nts), Inf, dfs)
+        # necessary to truncate dfs? in case of pmethod=="exact"?
+        # since OwensQOwen needs integer Df's
+        if(pmethod=="exact") dfs <- trunc(dfs)
         pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
-                           diffm=pes_tmp, sem=se, df=trunc(dfs), method=pmethod)
+                           diffm=pes_tmp, sem=se, df=dfs, method=pmethod)
         nts <- ifelse(is.finite(nts) & pwr<targetpower, nts+steps, nts)
       }
     } else {
@@ -250,15 +260,14 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
                        mse=Vpooled_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
                        method=pmethod, bk=4)
       # in case of Welch's test the sample size may be too low
-      # thus we raise them
-      # TODO if this is sufficient needs to be tested
+      # thus we raise them if necessary
       if (test=="welch"){
         # calculate power for Welch's
         nT  <- nR <- nts/2
         se <- sqrt(varsT/nT + varsR/nR)
         dfs <- (varsT/nT + varsR/nR)^2/(varsT^2/nT^2/(nT-1) + varsR^2/nR^2/(nR-1))
         pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
-                           diffm=lGMR, sem=se, df=trunc(dfs), method=pmethod)
+                           diffm=lGMR, sem=se, df=dfs, method=pmethod)
         nts <- ifelse(is.finite(nts) & pwr<targetpower, nts+steps, nts)
       }
     }
@@ -269,7 +278,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     ns2R <- ifelse(nts/2>ns1R, nts/2 - ns1R, 0)
     n2 <- ns2T + ns2R
 
-    if(print & details){
+    if(details){
       cat("Time consumed (secs):\n")
       print(round((proc.time()-ptms),1))
     }
@@ -371,63 +380,32 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   # take care of memory
   rm(pes_tmp, pes)
   # the return list
-  res <- list(design="2-group parallel", method=method, 
+  res <- list(design="2 parallel groups", method=method, 
               alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, CV=CV, 
-              n1=ifelse(ns1T!=ns1R,c(ns1T, ns1R), n1), 
-              GMR=GMR, test=test, targetpower=targetpower, pmethod=pmethod, 
+              n1=c(ns1T, ns1R), GMR=GMR, test=test, targetpower=targetpower, 
+              pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, 
               usePE=usePE, Nmax=Nmax, nsims=nsims,
               # results 
               pBE=sum(BE)/nsims, pBE_s1=sum(BE[stage==1])/nsims,
               # Dec 2014: meaning of pct_s2 changed
               pct_s2=100*sum(ntot>n1)/nsims, 
-              nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
-  # output
-  if (print) {
-    if (details){
-      cat("Total time consumed (secs):\n")
-      print(round((proc.time()-ptm),1))
-      cat("\n")
-    }
-    cat("2-group parallel 2-stage design\n")
-    cat("Method ", method,":", sep="")
-    if (method=="C") cat(" alpha0 = ", alpha0, ",",sep="")
-    cat(" alpha (s1/s2) =", alpha[1], alpha[2], "\n")
-    cat("CI's based on", ifelse(test=="welch","Welch's t-test",test),"\n")
-    cat("Target power in power monitoring and sample size est. = ", 
-        targetpower,"\n",sep="")
-    cat("BE margins = ", theta1," ... ", theta2,"\n", sep="")
-    if (length(CV)==2){
-      cat("CVs = ("); cat(CV,sep=", ")
-    } else {
-      cat("CV = ", CV, sep="")
-    }
-    cat("; ntot(stage 1) = ", n1, " (nT, nR = ", ns1T, ", ", ns1R,")", sep="")
-    cat("; GMR=", GMR, "\n")
-    if(usePE) {
-      cat("PE and variances of stage 1 in sample size est. used\n")
-    } else {
-      cat("GMR =",GMR, "and variances of stage 1 in sample size est. used\n")
-    }
-    cat("Futility criterion Nmax = ",Nmax,"\n", sep="")
-    cat("\n",nsims," sims at theta0 = ", theta0, sep="")
-    if(theta0<=theta1 | theta0>=theta2) cat(" (p(BE)='alpha').\n") else { 
-       cat(" (p(BE)='power').\n")}
-    cat("p(BE)    = ", res$pBE,"\n", sep="")
-    cat("p(BE) s1 = ", res$pBE_s1,"\n", sep="")
-    if (res$pct_s2>0.01){
-      cat("Studies in stage 2 = ", round(res$pct_s2,2), "%\n", sep="")
-    } else {
-      cat("Studies in stage 2 = ", round(res$pct_s2,4), "%\n", sep="")
-    }
-    cat("\nDistribution of n(total)\n")
-    cat("- mean (range) = ", round(res$nmean,1)," (", res$nrange[1]," ... ",
-        res$nrange[2],")\n", sep="")
-    cat("- percentiles\n")
-    print(res$nperc)
-    cat("\n")
-  } 
+              nmean=mean(ntot), nrange=range(ntot), 
+              nperc=quantile(ntot, p=npct))
   
-  if (print) return(invisible(res)) else return(res)
+  # table object summarizing the discrete distri of ntot
+  # only if usePE=FALSE or if usePE=TRUE then Nmax must be finite?
+#  if (usePE==FALSE | (usePE==TRUE & is.finite(Nmax))){
+    res$ntable <- table(ntot)
+#  }
+  
+  if (details){
+    cat("Total time consumed (secs):\n")
+    print(round((proc.time()-ptm),1))
+    cat("\n")
+  }
+
+  class(res) <- c("pwrtsd", "list")
+  return(res)
   
 } #end function
