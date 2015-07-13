@@ -157,8 +157,10 @@ power.2stage.DL <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.029
     # use mse1 & pe1 or mse1 & GMR
     # sample size function returns Inf if pe1 is outside acceptance range
     #browser()
+    # now the rule: PE1 in range GMR ... 1/GMR then use GMR, else use PE1
     # pes_tmp is needed later, thus create another variable
-    pes_tmp2 <- ifelse(pes_tmp>=lGMR & pes_tmp<=-lGMR, lGMR, pes_tmp )
+    lGMR2 <- ifelse(lGMR<0, lGMR, -lGMR)
+    pes_tmp2 <- ifelse(pes_tmp>=lGMR2 & pes_tmp<=-lGMR2, lGMR, pes_tmp )
     nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp2,
                     mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, method=pmethod)
     rm(pes_tmp2)
@@ -246,13 +248,12 @@ power.2stage.DL <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.029
               pct_s2=100*sum(ntot>n1)/nsims, 
               # which simply means all those with n2>0
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct)
-              #, ntot=ntot # experimental: return also all sample sizes
               )
 
   # table object summarizing the discrete distri of ntot
-  # only if usePE=FALSE or if usePE=TRUE then Nmax must be finite?
-  #if (is.finite(Nmax))   res$ntable <- table(ntot)
-  res$ntable <- table(ntot)
+  # here usePE=TRUE, then Nmax must be finite?
+  if (is.finite(Nmax))   res$ntable <- table(ntot)
+  #res$ntable <- table(ntot)
   
   if (details){
     cat("Total time consumed (secs):\n")

@@ -1,3 +1,10 @@
+Version 0.4-2
+2015-07-13
+   - Bug removed in power.2stage.ssr() which prevented correct sample-size 
+     re-estimation if power was calculated via pmethod="ls"
+   - power.2stage.ssr() now has an argument usePE to use the point estimate from
+     the interim analysis in sample-size re-estimation (makes only sense if 
+     blind=FALSE)
 Version 0.4-1
 2015-06-19
    - Major rewrite of the power.2stage.xyz() functions wich now return an S3 object

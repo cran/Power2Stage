@@ -78,11 +78,11 @@ Futility criterion to use for PE or CI.
 Lower futility limit for the PE or CI of stage 1.\cr
 If the PE or CI is outside \code{fClower} ... \code{fCupper} the study is stopped
 with the result FAIL (not BE).\cr
-May be missing. Defaults then to 0.825 if \code{fCrit="PE"} or 0.9 if \code{fCrit="CI"}.
+May be missing. Defaults then to 0.8 if \code{fCrit="PE"} or 0.9 if \code{fCrit="CI"}.
 }
   \item{fCupper}{
 Upper futility limit for the PE or CI of stage 1.\cr
-If missing it will be set to 1/fClower.
+Will be set to \code{1/fClower} if missing.
 }
   \item{theta0}{
 True ratio of T/R for simulating. Defaults to the \code{GMR} argument.

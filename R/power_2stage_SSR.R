@@ -8,19 +8,20 @@ reqN2CV <- function(alpha=0.05, targetpower=0.8, theta0=1., theta1=0.8, n)
   return(mse2CV(s2e))
 }
   
-# --------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # power (or alpha) of 2-stage studies with (blinded) sample size re-estimation
 # see Golkowski et al.
 #
 # author D.L.
-# --------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # require(PowerTOST)
 # source("C:/Users/dlabes/workspace/Power2Stage/R/sampsiz2.R")
+# source("C:/Users/dlabes/workspace/Power2Stage/R/sampsiz_n0.R")
 # source("C:/Users/dlabes/workspace/Power2Stage/R/power.R")
 
 power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8, 
                              pmethod=c("nct","exact", "shifted","ls"),
-                             blind=FALSE, min.n=0, max.n=Inf, 
+                             blind=FALSE, usePE=FALSE, min.n=0, max.n=Inf, 
                              theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95), 
                              nsims, setseed=TRUE, print=TRUE, details=FALSE)
 { # seems to give errors if alpha is a vector
@@ -50,8 +51,13 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
     if(theta0<=theta1 | theta0>=theta2) nsims <- 1E6
   }
   
-  # check if power calculation method is nct or exact
+  # check if power calculation method is nct, exact, shifted or large sample
   pmethod <- match.arg(pmethod)
+  
+  if(blind & usePE) {
+    usePE=FALSE
+    warning("usePE=TRUE does not make sense for blinded SSR. Reset to usePE=FALSE.")
+  }
   
   if(details){
     cat(nsims,"sims. Stage 1")
@@ -103,8 +109,11 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   # this is not really part of the method (?) but a run-time goody
   # will give some boost for small CV's and/or high n1
   if(pmethod!="ls"){
+    # use GMR or pe1 in sample size re-est.
+    lpes <- lGMR
+    if(usePE) lpes <- pes
     pwr <- .calc.power(alpha=alpha, ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, sem=sqrt(bk*s2os/n1), df=df, method=pmethod)
+                       diffm=lpes, sem=sqrt(bk*s2os/n1), df=df, method=pmethod)
     if(details){
       cat("Sample sizes (", sum(pwr<targetpower),
           " studies) will be re-estimated.\n", sep="")
@@ -120,26 +129,28 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
     }
   }
   # total sample size
-  ntot <- rep(n1, times=nsims)
+  ntot    <- rep(n1, times=nsims)
   mse_tmp <- s2os[pwr<targetpower]
-  # large sample approx. via normal distribution
+  pes_tmp <- pes[pwr<targetpower]
+  # use GMR or pe1 in sample size re-est.
+  lpes <- lGMR
+  if(usePE) lpes <- pes_tmp
   if(pmethod=="ls"){
+    # large sample approx. via normal distribution
     nt <- .sampleN00(alpha=alpha, targetpower=targetpower, se=sqrt(mse_tmp), 
-                     diffm=lGMR, ltheta1=ltheta1, ltheta2=ltheta2, bk=2, 
+                     diffm=lpes, ltheta1=ltheta1, ltheta2=ltheta2, bk=2, 
                      steps=2, diffmthreshold=0.0)
   } else {
-#     nt <- mapply(FUN=.sampleN, mse=mse_tmp, 
-#                  MoreArgs=list(alpha=alpha, targetpower=targetpower, 
-#                                ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-#                                method=pmethod, bk=2))
-     nt <- .sampleN2(alpha=alpha, targetpower=targetpower, ltheta0=lGMR,
-                     mse=mse_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
-                     method=pmethod, bk=2)
+    # exact or approx. via t-distri
+    nt <- .sampleN2(alpha=alpha, targetpower=targetpower, ltheta0=lpes,
+                    mse=mse_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
+                    method=pmethod, bk=2)
   }
+  #browser()
   # maybe we have enough power in all cases and thus no re-estimated sample size
   if(length(nt)>0) ntot[pwr<targetpower] <- nt
   # take care of memory
-  rm(nt, pwr, mse_tmp)
+  rm(nt, pwr, mse_tmp, lpes)
   # sample size returns Inf if pe outside acceptance range, then stay with n1 
   # but this should not occure here since pe1 is not used
   ntot <- ifelse(is.finite(ntot), ntot, n1)
@@ -197,7 +208,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
   res <- list(method="SSR",
               alpha=alpha, CV=CV, n1=n1, GMR=GMR, targetpower=targetpower, 
               pmethod=pmethod, theta0=theta0, theta1=theta1, theta2=theta2, 
-              max.n=max.n, min.n=min.n, blind=blind, nsims=nsims,
+              usePE=usePE, max.n=max.n, min.n=min.n, blind=blind, nsims=nsims,
               # results 
               pBE=sum(BE)/nsims, 
               #pBE_s1 ?
@@ -205,7 +216,8 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
               nmean=mean(ntot), nrange=range(ntot), nperc=quantile(ntot, p=npct))
   
   # return a table object as summary of ntot distribution
-  res$ntable <- table(ntot)
+  # only if usePE==FALSE ? or always?
+  if(!usePE) res$ntable <- table(ntot)
   
   if (details){
     cat("Total time consumed (secs):\n")

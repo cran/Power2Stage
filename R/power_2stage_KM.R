@@ -216,13 +216,13 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
     lower <- pe2 - hw
     upper <- pe2 + hw
     BE2   <- lower>=ltheta1 & upper<=ltheta2
-    # combine stage 1 & stage 2
+    # combine stage 1 & stage 2 BE statements
     ntot[is.na(BE)]  <- nt
     BE[is.na(BE)]    <- BE2
     # done with them
     rm(BE2, nt, lower, upper, hw)
   } # end stage 2 calculations
-  # take care of memory
+  # take care of memory - may be superflous here since function ends
   rm(pes_tmp, mses_tmp)
   # the return list
   res <- list(design="2x2 crossover", method=method, modified="KM",
@@ -238,7 +238,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
 
   # table object summarizing the discrete distri of ntot
   # only given back if usePE=FALSE or if usePE=TRUE then Nmax must be finite
-  # since here usePE is always TRUE this reduces to is.finite Nmax
+  # since here usePE not available but is used as TRUE this reduces to is.finite(Nmax)
   if (is.finite(Nmax)){
     res$ntable <- table(ntot)
   }

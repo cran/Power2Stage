@@ -1,6 +1,7 @@
 # Export all names except those beginning with .
 # exportPattern("^[^\\.]")
-# Export explicitly by name
+
+# Export explicitly by name, good practice
 export(
       power.2stage
     , power.2stage.KM
@@ -15,6 +16,9 @@ export(
 import(
   PowerTOST, stats
 )
+# good practice importFrom
+#importFrom(PowerTOST, CV2se, CV2mse, OwensQ)
+#importFrom(stats, pt, qt, pnorm, qnorm, rnorm, rchisq, quantile)
 
 # Define S3 methods for the return value class "pwrtsd" 
 # of the power.2stage.xyz() functions

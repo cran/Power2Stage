@@ -11,7 +11,7 @@ The sample size re-estimation may be done blinded or not blinded.
 \usage{
 power.2stage.ssr(alpha = 0.05, n1, GMR, CV, targetpower = 0.8, 
                 pmethod = c("nct", "exact", "shifted", "ls"), blind = FALSE, 
-                min.n = 0, max.n = Inf, theta0, theta1, theta2, 
+                usePE = FALSE, min.n = 0, max.n = Inf, theta0, theta1, theta2, 
                 npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, 
                 print = TRUE, details = FALSE)
 }
@@ -46,6 +46,12 @@ If \code{TRUE} the blinded estimate of the intra-subject variance, i.e. the
 estimate from the period differences, is used in sample size estimation.\cr
 If \code{FALSE} the usual mse from stage 1 is used.\cr
 Defaults to \code{FALSE} since most BE studies are done as open.
+}
+  \item{usePE}{
+If \code{TRUE} the point estimate from the interim analysis is used in the 
+sample site re-estimation. Defaults to \code{FALSE}.\cr\cr
+\code{usePE = TRUE} doesn't make sense if \code{blind = TRUE}. In that case the
+function issues a warning and \code{usePE} is reset to \code{usePE = FALSE}.
 }
   \item{min.n}{
 If \code{min.n>n1}, the re-estimated sample size (N) is set to max(min.n,N).\cr
@@ -109,13 +115,13 @@ as components.\cr
 The class "pwrtsd" has a S3 print method.\cr
 The results are in the components:
 \item{pBE}{Contains the ratio of studies found BE.}
-\item{pBE_s1}{Ratio of studies found BE in stage 1.}
 \item{pct_s2}{Percentage of studies continuing to stage 2.}
 \item{nmean}{Mean of n(total).}
 \item{nrange}{Range (min, max) of n(total).}
 \item{nperc}{Percentiles of the distribution of n(total).}
 \item{ntable}{Object of class "table" summarizing the discrete distribution of 
-n(total) via its unique values and counts of occurences of these values.}
+n(total) via its unique values and counts of occurences of these values.\cr
+ntable is only given back if \code{usePE = FALSE}}
 }
 \references{
 Golkowski D, Friede T, Kieser M\cr
@@ -142,7 +148,7 @@ Using the crude \code{pmethod="ls"} on the other hand results in a nearly immedi
 sample size re-estimation.
 }
 \seealso{
-\code{\link{power.2stage}} for adaptive 2-stage studies with interim BE decision.
+\code{\link{power.2stage}} for 2-stage studies with interim BE decision.
 }
 \examples{
 # much too low number of sims to complain with CRAN policy about examples run-time 

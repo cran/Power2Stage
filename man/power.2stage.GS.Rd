@@ -132,6 +132,7 @@ Even 1E7 sims are possible without meanwhile too much beer :-)).\cr\cr
 }
 \examples{
 # using the Pocock alpha settings and no futility rule
-# (defaults), a CV of 20\% and 12 subjects in both stages
+# (defaults), a CV of 20\% and 12 subjects in both stages,
+# midway interim 
 power.2stage.GS(CV=0.2, n=c(12,12))
 }

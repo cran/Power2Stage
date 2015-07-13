@@ -2,8 +2,8 @@ Package: Power2Stage
 Type: Package
 Title: Power and Sample-Size Distribution of 2-Stage Bioequivalence
         Studies
-Version: 0.4-1
-Date: 2015-06-19
+Version: 0.4-2
+Date: 2015-07-13
 Authors@R: c(person("Detlew", "Labes", role = c("aut","cre"), email =
                     "DetlewLabes@gmx.de"),
              person("Helmut", "Schuetz", role = c("ctb"), email =
@@ -36,9 +36,9 @@ License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
 NeedsCompilation: no
-Packaged: 2015-06-29 10:46:13 UTC; dlabes
+Packaged: 2015-07-17 11:02:15 UTC; dlabes
 Author: Detlew Labes [aut, cre],
   Helmut Schuetz [ctb]
 Maintainer: Detlew Labes <DetlewLabes@gmx.de>
 Repository: CRAN
-Date/Publication: 2015-06-29 14:49:31
+Date/Publication: 2015-07-17 13:15:19

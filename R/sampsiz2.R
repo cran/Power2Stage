@@ -35,6 +35,8 @@
   n <- .sampleN0_3(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   n <- ifelse(n<nmin, nmin, n)
   
+  # method=="ls" is not used yet, in power.2stage.ssr() the 'original' ls approx
+  # is used exactly as given in the paper of Golkowski et al.
   if(method=="ls") return(n)
   
   # degrees of freedom as expression
@@ -47,9 +49,9 @@
   pow  <- .calc.power(alpha, ltheta1, ltheta2, diffm, sem=se*sqrt(bk/n), df, method)
   iter <- rep(0, times=length(se)) 
   imax <- 50
-  # iter>50 is emergency brake
+  # imax =max. iter >50 is emergency brake
   # this is eventually not necessary, depends on quality of sampleN0
-  # in experimentation I have seen max of 2-3 steps
+  # in experimentation I have seen max. of 2-3 steps
   # reformulation with only one loop does not shorten the code considerable
   # --- loop until power <= target power, step-down
 #  down <- FALSE; up <- FALSE
