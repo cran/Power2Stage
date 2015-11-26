@@ -13,10 +13,10 @@
 power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.0294), 
                             n1, CV, GMR, targetpower=0.8, 
                             pmethod=c("nct","exact", "shifted"), 
-                            usePE=FALSE, powerstep=TRUE, min.n2=0, fCrit=c("PE","CI"), 
-                            fClower, fCupper, theta0, theta1, theta2, 
-                            npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
-                            print=TRUE, details=FALSE)
+                            usePE=FALSE, powerstep=TRUE, min.n2=0, max.n=Inf,
+                            fCrit=c("CI", "PE"), fClower, fCupper, theta0, theta1, 
+                            theta2, npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
+                            details=FALSE)
 { 
   # chek method, check futility criterion
   method <- match.arg(method)
@@ -48,14 +48,10 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
     if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
   }
   if(fCrit=="CI"){
-    if (missing(fClower) & missing(fCupper))  fClower <- 0.9
+    if (missing(fClower) & missing(fCupper))  fClower <- 0.925
     if (missing(fClower) & !missing(fCupper)) fClower <- 1/fCupper
     if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
   }
-  # fClower=0 is original Potvin "B"
-#  if (fClower<theta1 | fCupper>theta2){
-#    stop("Futility range for PE must be inside BE acceptance range!")
-#  }
 
   if(min.n2!=0 & min.n2<2) stop("min.n2 has to be at least +2 if >0.")
   # make even (round up)
@@ -63,7 +59,10 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
     min.n2 <- min.n2 + min.n2%%2
     message("min.n2 rounded to even", min.n2)
   }
-
+  
+  # check max.n
+  if (n1>=max.n) stop("max.n <= n1 doestn't make sense!")
+  
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
@@ -124,32 +123,57 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   lower <- pes_tmp - hw
   upper <- pes_tmp + hw
   BE1   <- lower>=ltheta1 & upper<=ltheta2
+  # browser()
   if (method=="C"){
     #if BE met -> PASS stop
     #if not BE -> goto sample size estimation i.e flag BE1 as NA
     BE1[!BE1] <- NA
   } else { 
-    # method B
+    # method B / E
     if(powerstep){
-      # evaluate power at alpha[1]
-      pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
+      # evaluate power at alpha[2] according to Xu et al. Method E, F
+      pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
                          diffm=lGMR, sem=sqrt(bk*mses_tmp/n1), df=df, 
                          method=pmethod)
-      # if BE met then decide BE regardless of power
-      # if not BE and power<0.8 then goto stage 2
-      BE1[ !BE1 & pwr<targetpower] <- NA 
+      # Potvin method E:
+      # if not BE and if power >= 0.8 (targetpower) make a second BE evaluation 
+      # with alpha[2]
+      # but only if alpha[1] != alpha[2] ?
+      BE12  <- BE1 # reserve memory
+      BE11  <- BE1
+      # BE decision at alpha[2]
+      tval  <- qt(1-alpha[2], df)
+      hw    <- tval*sqrt(Cfact*mses_tmp)
+      lower <- pes_tmp - hw
+      upper <- pes_tmp + hw
+      BE12  <- lower>=ltheta1 & upper<=ltheta2
+      # browser()
+      # if BE(a1) then BE1=TRUE, regardless of power
+      BE1[BE11==TRUE] <- TRUE 
+      # if not BE(a1) but power >= 0.8 then make BE decision at alpha2
+      BE1[BE11==FALSE & pwr>=targetpower] <- BE12[BE11==FALSE & pwr>=targetpower]
+      # if not BE(a1) and power<0.8 then not decided (marker NA)
+      # will be further decided by futility criterion
+      BE1[BE11==FALSE & pwr<targetpower]  <- NA 
+      # keep care of memory
+      rm(BE11, BE12)
     } else {
       # we do not calculate power
       BE1[ !BE1 ] <- NA  # not decided yet -> stage 2
     }
   }
-  # check pe outside futility range
+  # ----- check pe /ci outside futility range
   if(fCrit=="PE"){
     outside <- ((pes_tmp-ln_fClower)<1.25e-5 | (ln_fCupper-pes_tmp)<1.25e-5)
   } else {
+    # 90% (!) CI outside
+    tval0   <- qt(1-alpha0, df)
+    hw      <- tval0*sqrt(Cfact*mses_tmp)
+    lower   <- pes_tmp - hw
+    upper   <- pes_tmp + hw
     outside <- (lower > ln_fCupper) | (upper<ln_fClower)
   }
-  BE1 <- ifelse(outside, FALSE, BE1)
+  BE1[is.na(BE1) & outside] <- FALSE
   # combine BE and BE1
   BE[is.na(BE)] <- BE1
   # take care of memory, done with them
@@ -204,9 +228,13 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
                       mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
                       method=pmethod)
     }
+    # cap to max.n
+    nt[nt>max.n] <- max.n
+    # n2
     n2 <- ifelse(nt>n1, nt - n1, 0)
     # assure a min.n2
-    n2 <- ifelse(n2<min.n2, min.n2, n2)
+    n2[n2<min.n2] <- min.n2 
+    
     
     if(details){
       cat("Time consumed (secs):\n")
@@ -258,8 +286,8 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
     upper <- pe2 + hw
     BE2   <- lower>=ltheta1 & upper<=ltheta2
     # combine stage 1 & stage 2
-    ntot[is.na(BE)]  <- nt
-    BE[is.na(BE)]    <- BE2
+    ntot[is.na(BE)] <- nt
+    BE[is.na(BE)]   <- BE2
     # done with them
     rm(BE2, nt, lower, upper, hw)
   } # ----- end of stage 2 calculations ----------------------------------
@@ -267,10 +295,11 @@ power.2stage.fC <- function(method=c("B", "C"), alpha0=0.05, alpha=c(0.0294,0.02
   rm(pes_tmp, mses_tmp)
   # the return list
   res <- list(design="2x2 crossover",
-              method=method, alpha=alpha, CV=CV, n1=n1, GMR=GMR, 
+              method=method, alpha0=alpha0, # alpha0 is in method B also used for CI futility
+              alpha=alpha, CV=CV, n1=n1, GMR=GMR, 
               targetpower=targetpower, pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, usePE=usePE, 
-              powerstep=powerstep, min.n2=min.n2,
+              powerstep=powerstep, min.n2=min.n2, max.n=max.n,
               fCrit=fCrit, fCrange=c(fClower, fCupper), 
               nsims=nsims,
               # results 

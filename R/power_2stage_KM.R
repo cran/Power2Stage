@@ -12,7 +12,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
                             n1, CV, targetpower=0.8, pmethod=c("nct","exact"),
                             Nmax=150, theta0, theta1, theta2, 
                             npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
-                            print=TRUE, details=FALSE)
+                            details=FALSE)
 {
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")
@@ -38,7 +38,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   # check if power calculation method is nct or exact
   pmethod <- match.arg(pmethod)
   
-  if(print & details){
+  if(details){
     cat(nsims,"sims. Stage 1")
   }
   # start timer
@@ -125,7 +125,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   # take care of memory, done with stage 1
   rm(BE1)
   
-  if(print & details){
+  if(details){
     cat(" - Time consumed (secs):\n")
     print(round((proc.time()-ptm),1))
   }
@@ -138,7 +138,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
   
   # Maybe we are already done with stage 1
   if(length(pes_tmp)>0){
-    if(print & details){
+    if(details){
       cat("Keep calm. Sample sizes (", length(pes_tmp),
           " studies) for stage 2\n", sep="")
       cat("will be estimated. May need some time.\n")
@@ -164,7 +164,7 @@ power.2stage.KM <- function(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.029
                     method=pmethod, bk=bk)
     n2  <- ifelse(nt>n1, nt - n1, 0)
     
-    if(print & details){
+    if(details){
       if(nsims<=1E5 & pmethod!="exact"){
         cat("Time consumed (secs):\n")
         print(round((proc.time()-ptms),1))

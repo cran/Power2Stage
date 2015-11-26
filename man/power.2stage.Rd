@@ -13,8 +13,7 @@ done with point estimator & mse of stage 1.
 power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
              n1, GMR, CV, targetpower = 0.8, pmethod = c("nct", "exact", "shifted"),
              usePE = FALSE, Nmax = Inf, min.n2=0, theta0, theta1, theta2,  
-             npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, 
-             print = TRUE, details = FALSE)
+             npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, details = FALSE)
 }
 \arguments{
   \item{method}{
@@ -100,10 +99,6 @@ is issued if \code{setseed=TRUE}, the default.\cr
 Set this argument to \code{FALSE} to view the variation in power between 
 different runs.
 }
-  \item{print}{
-This argument is now defunct since printing is done via S3 method print.\cr  
-It is retained for compatibility but will be removed in the next version. 
-}
   \item{details}{
 If set to \code{TRUE} the function prints the results of time measurements
 of the simulation steps. Default is \code{FALSE}.
@@ -136,7 +131,7 @@ This component is only given back if \code{usePE==FALSE} or otherwise if
 \references{
 Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharmaceut. Statist. 7(4), 245-62 (2008)
+Pharm Stat. 7(4), 245-62 (2008)
 
 Montague TH et al.\cr
 "Additional results for 'Sequential design approaches for bio-equivalence studies 
@@ -163,20 +158,21 @@ published inline 22 Jan 2015
 
 Kieser M, Rauch G\cr
 "Two-stage designs for cross-over bioequivalence trials"\cr
-Stat Med 2015 Mar 24\cr
-epub ahead of print
+Stat Med. 2015 Jul 20;34(16):2403-16. Epub 2015 Mar 24.
 
 Zheng Ch, Zhao L, Wang J\cr
 "Modifications of sequential designs in bioequivalence trials"\cr
 Pharm Stat 14 (3), 180-188, May/June 2015\cr
-published online: 9 FEB 2015
+published online: 9 Feb 2015
 }
 \author{
 D. Labes
 }
 \seealso{
 \code{\link{power.2stage.p}} for analogous calculations for 2-group parallel 
-design.
+design.\cr
+\code{\link{power.2stage.fC}} for analogous calculations with futility check 
+based on point estimate of stage 1.
 }
 \examples{
 # using all the defaults and 24 subjects in stage 1, CV of 25\%
@@ -198,4 +194,3 @@ hist(ntot, freq=FALSE, breaks=res$nrange[2]-res$nrange[1])
 abline(v=c(res$nmean, res$nperc[["50\%"]]), lty=c(1, 3))
 legend("topright", box.lty=0, legend=c("mean", "median"), lty=c(1, 3), cex=0.9)}
 }
-

@@ -20,7 +20,7 @@ print.pwrtsd <- function(x, ...)
     cat("BE acceptance range = ", x$theta1," ... ", x$theta2,"\n\n", sep="")
     cat("CV= ", x$CV,"; n(s1, s2)= ", x$n[1]," " , x$n[2], "\n", sep="")
     
-    # no sample size distribution in results
+    # no sample size distribution in results here
     .print_results(x)
 
     return(invisible(x))
@@ -106,10 +106,19 @@ print.pwrtsd <- function(x, ...)
       cat("No futility criterion\n")
     }
   }
+  # max.n is not always present
+  if(!is.null(x$max.n)){
+    if(is.finite(x$max.n)){
+      cat("Maximum sample size max.n = ", x$max.n,"\n", sep="")
+    }
+  }
+  
   # futility criterion w.r.t. PE or CI
   if(!is.null(x$fCrit)){
     if(x$fCrange[1L] >0 & is.finite(x$fCrange[2L])){
-      cat("Futility criterion ", x$fCrit," outside ", x$fCrange[1L], " ... ",
+      fCrit <- x$fCrit
+      if(fCrit=="CI") fCrit <- paste0(100*(1-2*x$alpha0), "% CI")
+      cat("Futility criterion ", fCrit," outside ", x$fCrange[1L], " ... ",
           x$fCrange[2L], "\n", sep="")
     } else {
       cat("No futility criterion\n")

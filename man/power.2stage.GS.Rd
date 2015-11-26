@@ -11,7 +11,7 @@ The number of subjects in both stages have to be prespecified (non-adaptive).
 \usage{
 power.2stage.GS(alpha = c(0.0294, 0.0294), n, CV, theta0, theta1, theta2, 
                 fCrit = c("PE", "CI"), fClower, fCupper, nsims, setseed = TRUE, 
-                print = TRUE, details = FALSE)
+                details = FALSE)
 }
 \arguments{
   \item{alpha}{
@@ -66,10 +66,6 @@ generator. To avoid differences in power for different runs a
 Set this argument to \code{FALSE} to view the variation in power between 
 different runs.
 }
-  \item{print}{
-This argument is now defunct since printing is done via S3 method print.\cr  
-It is retained for compatibility but will be removed in the next version. 
-}
   \item{details}{
 If set to \code{TRUE} the function prints the results of time measurements
 of the simulation steps. Default is \code{FALSE}.
@@ -107,12 +103,11 @@ Chapter 5.6 Optional Designs
 Schuetz H.\cr
 "Two-stage designs in bioequivalence trials"\cr
 Eur J Clin Pharmacol 71(3):271-81 (2015)\cr
-published inline 22 Jan 2015
+published online 22 Jan 2015
 
 Kieser M, Rauch G\cr
 "Two-stage designs for cross-over bioequivalence trials"\cr
-Stat Med 2015 Mar 24\cr
-epub ahead of print
+Stat Med. 2015 Jul 20;34(16):2403-16. Epub 2015 Mar 24.
 
 Zheng Ch, Zhao L, Wang J\cr
 "Modifications of sequential designs in bioequivalence trials"\cr

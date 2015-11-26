@@ -14,15 +14,18 @@ of stage 1.
 \usage{
 power.2stage.fC(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
                 n1, CV, GMR, targetpower = 0.8, pmethod = c("nct", "exact", "shifted"), 
-                usePE = FALSE, powerstep = TRUE, min.n2=0, fCrit=c("PE","CI"), 
-                fClower, fCupper, theta0, theta1, theta2, npct = c(0.05, 0.5, 0.95), 
-                nsims, setseed = TRUE, print = TRUE, details = FALSE)
+                usePE = FALSE, powerstep = TRUE, min.n2=0, max.n=Inf, 
+                fCrit=c("CI", "PE"), fClower, fCupper, theta0, theta1, theta2, 
+                npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, details = FALSE)
 }
 \arguments{
   \item{method}{
 Decision schemes according to Potvin et.al. Default is "B". \cr
 Potvin method D can be obtained by choosing "C" but setting 
-\code{alpha=c(0.028,0.028)}.
+\code{alpha=c(0.028,0.028)}.\cr
+Method E of Xu et al. can be obtained choosing here "B" and setting alpha's,
+futility criterion "CI", max.n and n1 according to the reference. 
+Method F can be obtained choosing here "C" with the appropriate design setting.
 }
   \item{alpha0}{
 Alpha value for the first step(s) in Potvin C, the power inspection
@@ -71,6 +74,13 @@ Minimum sample size of stage 2. Defaults to zero.\cr
 If the sample size estimation step gives N < n1 the sample size for stage 2 
 will be set to \code{min.n2}, i.e. the total sample size to \code{n1+min.n2}.
 }
+  \item{max.n}{
+If max.n is set to a finite value the re-estimated total sample size (N) is set 
+to min(max.n,N).\cr
+Defaults to Inf which is equivalent to not constrain the re-estimated sample size.\cr
+Attention! max.n is here \bold{not} a futility criterion like Nmax in other 
+functions of this package.
+}
   \item{fCrit}{
 Futility criterion to use for PE or CI.
 }
@@ -78,7 +88,7 @@ Futility criterion to use for PE or CI.
 Lower futility limit for the PE or CI of stage 1.\cr
 If the PE or CI is outside \code{fClower} ... \code{fCupper} the study is stopped
 with the result FAIL (not BE).\cr
-May be missing. Defaults then to 0.8 if \code{fCrit="PE"} or 0.9 if \code{fCrit="CI"}.
+May be missing. Defaults then to 0.8 if \code{fCrit="PE"} or 0.925 if \code{fCrit="CI"}.
 }
   \item{fCupper}{
 Upper futility limit for the PE or CI of stage 1.\cr
@@ -110,10 +120,6 @@ generator. To avoid differences in power for different runs a
 \code{set.seed(1234567)} is issued if \code{setseed=TRUE}, the default.\cr
 Set this argument to \code{FALSE} to view the variation in power between 
 different runs.
-}
-  \item{print}{
-This argument is now defunct since printing is done via S3 method print.\cr  
-It is retained for compatibility but will be removed in the next version. 
 }
   \item{details}{
 If set to \code{TRUE} the function prints the results of time measurements
@@ -147,7 +153,7 @@ This component is only given back if \code{usePE==FALSE} or
 \references{
 Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharmaceut. Statist. 7(4), 245-62 (2008)
+Pharm Stat 7(4), 245-62 (2008)
 
 Schuetz H.\cr
 "Two-stage designs in bioequivalence trials"\cr
@@ -163,6 +169,10 @@ Zheng Ch, Zhao L, Wang J\cr
 "Modifications of sequential designs in bioequivalence trials"\cr
 Pharm Stat 14 (3), 180-188, May/June 2015\cr
 published online: 9 FEB 2015
+
+Xu et al.\cr
+"Optimal adaptive sequential designs for crossover bioequivalence studies"\cr
+Pharm Stat. 2015 Nov 5. doi: 10.1002/pst.1721. [Epub ahead of print]
 }
 \author{
 D. Labes

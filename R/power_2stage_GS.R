@@ -8,7 +8,7 @@
 
 power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1, 
                             theta2,  fCrit=c("PE","CI"), fClower, fCupper, 
-                            nsims, setseed=TRUE, print=TRUE, details=FALSE)
+                            nsims, setseed=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")

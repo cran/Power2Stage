@@ -16,7 +16,7 @@ from stage 1 evaluation.
 power.2stage.KM(method=c("C","B"), alpha0=0.05, alpha=c(0.0294,0.0294),
                 n1, CV, targetpower=0.8, pmethod=c("nct","exact"),
                 Nmax=150, theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95), 
-                nsims, setseed=TRUE, print=TRUE, details=FALSE)
+                nsims, setseed=TRUE, details=FALSE)
 }
 \arguments{
   \item{method}{
@@ -89,10 +89,6 @@ generator. To avoid differences in power for different runs a
 Set this argument to \code{FALSE} to view the variation in power between 
 different runs.
 }
-  \item{print}{
-This argument is now defunct since printing is done via S3 method print.\cr  
-It is retained for compatibility but will be removed in the next version. 
-}
   \item{details}{
 If set to \code{TRUE} the function prints the results of time measurements
 of the simulation steps. Default is \code{FALSE}.
@@ -128,7 +124,7 @@ This component is only given back if \code{is.finite(Nmax)}.}
 \references{
 Potvin D et al.\cr
 "Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharmaceut. Statist. 7(4), 245-62 (2008)
+Pharm Stat 7(4), 245-62 (2008)
 
 Karalis V and P Macheras\cr
 "An Insight into the Properties of a Two-Stage Design in Bioequivalence Studies"\cr

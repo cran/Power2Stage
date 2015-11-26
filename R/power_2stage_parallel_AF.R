@@ -15,7 +15,7 @@ power.2stage.pAF <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.02
                              pmethod=c("shifted", "nct", "exact"), 
                              usePE=FALSE, Nmax=Inf, test=c("welch", "t-test", "anova"),
                              theta0, theta1, theta2, npct=c(0.05, 0.5, 0.95),  
-                             nsims, setseed=TRUE, print=TRUE, details=FALSE)
+                             nsims, setseed=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV(s) must be given!")
   if (any(CV<=0))  stop("CV(s) must be >0!")

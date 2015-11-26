@@ -14,8 +14,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
                          n1, GMR, CV, targetpower=0.8, 
                          pmethod=c("nct","exact", "shifted"),
                          usePE=FALSE, Nmax=Inf, min.n2=0, theta0, theta1, theta2,  
-                         npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, 
-                         print=TRUE, details=FALSE)
+                         npct=c(0.05, 0.5, 0.95), nsims, setseed=TRUE, details=FALSE)
 {
   if (missing(CV)) stop("CV must be given.")
   if (CV<=0)       stop("CV must be >0.")
@@ -110,12 +109,31 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   } else { 
     # method B
     # evaluate power at alpha[1]
-    pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
-                       diffm=lGMR, sem=sqrt(bk*mses_tmp/n1),df=df,  
+    # or at alpha[2]?
+    pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
+                       diffm=lGMR, sem=sqrt(bk*mses_tmp/n1), df=df,  
                        method=pmethod)
-    # if BE met then decide BE regardless of power
-    # if not BE and power<0.8 then goto stage 2
-    BE1[ !BE1 & pwr<targetpower] <- NA 
+    # Potvin method E:
+    # if not BE and if power >= 0.8 (targetpower) make a second BE evaluation 
+    # with alpha[2]
+    # but only if alpha[1] != alpha[2] ?
+    BE12  <- BE1 # reserve memory
+    BE11  <- BE1
+    # BE decision at alpha[2]
+    tval  <- qt(1-alpha[2], df)
+    hw    <- tval*sqrt(Cfact*mses_tmp)
+    lower <- pes_tmp - hw
+    upper <- pes_tmp + hw
+    BE12  <- lower>=ltheta1 & upper<=ltheta2
+    # browser()
+    # if BE(a1) then BE1=TRUE, regardless of power
+    BE1[BE11==TRUE] <- TRUE 
+    # if not BE(a1) but power >= 0.8 then make BE decision at alpha2
+    BE1[BE11==FALSE & pwr>=targetpower] <- BE12[BE11==FALSE & pwr>=targetpower]
+    # if not BE(a1) and power<0.8 then not decided (marker NA), goto stage 2
+    BE1[BE11==FALSE & pwr<targetpower]  <- NA 
+    # keep care of memory
+    rm(BE11, BE12)
   }
   # combine 'stage 0' from method C and stage 1
   BE[is.na(BE)] <- BE1
