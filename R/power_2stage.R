@@ -1,16 +1,12 @@
 # --------------------------------------------------------------------------
-# power (or alpha) of 2-stage studies according to Potvin et. al. 
+# power (or alpha) of 2-stage studies according to Potvin et al. 
 # methods "B" and "C", modified to include a futility criterion Nmax
 # modified to use PE of stage 1 in sample size estimation
 #
 # Author D.L.
 # --------------------------------------------------------------------------
-# require(PowerTOST)
-# source("./R/sampsiz2.R")
-# source("./R/sampsiz_n0.R")
-# source("./R/power.R")
 
-power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
+power.2stage <- function(method=c("B","C","B0"), alpha0=0.05, alpha=c(0.0294,0.0294),
                          n1, GMR, CV, targetpower=0.8, 
                          pmethod=c("nct","exact", "shifted"),
                          usePE=FALSE, Nmax=Inf, min.n2=0, theta0, theta1, theta2,  
@@ -43,7 +39,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   # make even (round up)
   if( min.n2%%2 != 0) {
     min.n2 <- min.n2 + min.n2%%2
-    message("min.n2 rounded to even", min.n2)
+    message("min.n2 rounded up to next even", min.n2)
   }
   # check if Potvin B or C
   method  <- match.arg(method)
@@ -76,7 +72,7 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
   pes   <- rnorm(n=nsims, mean=mlog, sd=sdm)
   # simulate mse via chi-squared distribution
   mses  <- mse*rchisq(n=nsims, df=df)/df
-  
+
   if(method=="C"){
     # if method=C then calculate power for alpha0=0.05 and plan GMR
     pwr <- .calc.power(alpha=alpha0, ltheta1=ltheta1, ltheta2=ltheta2, 
@@ -93,11 +89,10 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     BE[pwr<targetpower] <- NA # not yet decided
   }
   # method "B" or power<=0.8 in method "C"
-  # calculate power for alpha=alpha[1]
+  # calculate CI for alpha=alpha1
   mses_tmp <- mses[is.na(BE)]
   pes_tmp  <- pes[is.na(BE)]
   BE1 <- rep.int(NA, times=length(mses_tmp))
-  # calculate CI for alpha=alpha1
   hw    <- tval*sqrt(Cfact*mses_tmp)
   lower <- pes_tmp - hw
   upper <- pes_tmp + hw
@@ -107,33 +102,41 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     #if not BE -> goto sample size estimation i.e flag BE1 as NA
     BE1[!BE1] <- NA
   } else { 
-    # method B
-    # evaluate power at alpha[1]
-    # or at alpha[2]?
-    pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
+    # method E == B
+    pwr_alpha <- alpha[2]
+    # MSDBE == "B0"
+    if(method=="B0") pwr_alpha <- alpha[1]
+    pwr <- .calc.power(alpha=pwr_alpha, ltheta1=ltheta1, ltheta2=ltheta2, 
                        diffm=lGMR, sem=sqrt(bk*mses_tmp/n1), df=df,  
                        method=pmethod)
-    # Potvin method E:
-    # if not BE and if power >= 0.8 (targetpower) make a second BE evaluation 
-    # with alpha[2]
-    # but only if alpha[1] != alpha[2] ?
-    BE12  <- BE1 # reserve memory
-    BE11  <- BE1
-    # BE decision at alpha[2]
-    tval  <- qt(1-alpha[2], df)
-    hw    <- tval*sqrt(Cfact*mses_tmp)
-    lower <- pes_tmp - hw
-    upper <- pes_tmp + hw
-    BE12  <- lower>=ltheta1 & upper<=ltheta2
-    # browser()
-    # if BE(a1) then BE1=TRUE, regardless of power
-    BE1[BE11==TRUE] <- TRUE 
-    # if not BE(a1) but power >= 0.8 then make BE decision at alpha2
-    BE1[BE11==FALSE & pwr>=targetpower] <- BE12[BE11==FALSE & pwr>=targetpower]
-    # if not BE(a1) and power<0.8 then not decided (marker NA), goto stage 2
-    BE1[BE11==FALSE & pwr<targetpower]  <- NA 
-    # keep care of memory
-    rm(BE11, BE12)
+    if(method=="B0"){
+      # B0 == MSDBE: if power > targetpower then STOP: FAIL
+      # if BE met then decide BE regardless of power
+      # if not BE and power<0.8 then goto stage 2
+      BE1[ !BE1 & pwr<targetpower] <- NA 
+    } else {
+      # Potvin method E == B:
+      # if not BE and if power >= 0.8 (targetpower) make a second BE evaluation 
+      # with alpha[2]
+      # but only if alpha[1] != alpha[2] ?
+      # in case of alpha[1] == alpha[2] both BE12 and BE11 are identical
+      BE12  <- BE1 # reserve memory
+      BE11  <- BE1
+      # CI with alpha[2]
+      tval  <- qt(1-alpha[2], df) 
+      hw    <- tval*sqrt(Cfact*mses_tmp)
+      lower <- pes_tmp - hw
+      upper <- pes_tmp + hw
+      BE12  <- lower>=ltheta1 & upper<=ltheta2
+      # if BE(a1) then BE1=TRUE, regardless of power
+      BE1[BE11==TRUE] <- TRUE 
+      # if not BE(a1) but power >= 0.8 then make BE decision at alpha2
+      BE1[BE11==FALSE & pwr>=targetpower] <- BE12[BE11==FALSE & pwr>=targetpower]
+      # if not BE(a1) and power<0.8 then not decided (marker NA), goto stage 2
+      BE1[BE11==FALSE & pwr<targetpower]  <- NA 
+      # keep care of memory
+      rm(BE11, BE12)
+    }
   }
   # combine 'stage 0' from method C and stage 1
   BE[is.na(BE)] <- BE1
@@ -173,19 +176,11 @@ power.2stage <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294),
     if (usePE){
       # use mse1 & pe1 like in the paper of Karalis/Macheras
       # sample size function returns Inf if pe1 is outside acceptance range
-#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, ltheta0=pes_tmp, 
-#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-#                                  ltheta1=ltheta1, ltheta2=ltheta2,
-#                                  method=pmethod, bk=2))
       nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=pes_tmp,
                       mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
                       method=pmethod)
     } else {
       # use mse1 & GMR to calculate sample size (original Potvin)
-#       nt <- mapply(FUN=.sampleN, mse=mses_tmp, 
-#                    MoreArgs=list(alpha=alpha[2], targetpower=targetpower, 
-#                                  ltheta0=lGMR, ltheta1=ltheta1, ltheta2=ltheta2,
-#                                  method=pmethod, bk=2))
       nt <- .sampleN2(alpha=alpha[2], targetpower=targetpower, ltheta0=lGMR,
                       mse=mses_tmp, ltheta1=ltheta1, ltheta2=ltheta2, 
                       method=pmethod)

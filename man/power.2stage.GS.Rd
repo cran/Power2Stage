@@ -1,3 +1,4 @@
+\encoding{utf-8}
 \name{power.2stage.GS}
 \alias{power.2stage.GS}
 \title{
@@ -17,11 +18,11 @@ power.2stage.GS(alpha = c(0.0294, 0.0294), n, CV, theta0, theta1, theta2,
   \item{alpha}{
 Vector of the two nominal alpha values to be used in the 1-2*alpha confidence
 intervals calculations for the two stages.\cr
-Use something like package code{ldbounds} for choosing the nominal alpha's.
+Use something like package \code{ldbounds} for choosing the nominal alpha's.
 }
   \item{n}{
 Vector of the two sample sizes in stage 1 and stage 2.\cr
-n(total) is n[1]+n[2].
+n(total) is n[1]+n[2] if a second stage is necessary. Else it is n[1].
 }
   \item{CV}{
 Coefficient of variation of the intra-subject variability as ratio.
@@ -91,28 +92,29 @@ The results are in the components:
 }
 \references{
 Gould, A.L. \cr
-"Group sequential extensions of a standard bioequivalence testing procedure."\cr
-J. Pharmacokinetics and Biopharmaceutics, 23, 57-86. (1995)
+\emph{Group sequential extensions of a standard bioequivalence testing procedure}\cr
+J Pharmacokinet Biopharm. 1995 Feb;23(1):57-86 \doi{10.1007/BF02353786}
 
 Patterson S and Jones B\cr
-"BIOEQUIVALENCE and STATISTICS in CLINICAL PHARMACOLOGY"\cr
+\emph{BIOEQUIVALENCE and STATISTICS in CLINICAL PHARMACOLOGY}\cr
 Chapman & Hall/CRC\cr
 Boca Raton 2006\cr
 Chapter 5.6 Optional Designs
 
-Schuetz H.\cr
-"Two-stage designs in bioequivalence trials"\cr
+\enc{Schütz}{Schuetz} H.\cr
+\emph{Two-stage designs in bioequivalence trials}\cr
 Eur J Clin Pharmacol 71(3):271-81 (2015)\cr
-published online 22 Jan 2015
+published online 22 Jan 2015 \doi{10.1007/s00228-015-1806-2}
 
 Kieser M, Rauch G\cr
-"Two-stage designs for cross-over bioequivalence trials"\cr
-Stat Med. 2015 Jul 20;34(16):2403-16. Epub 2015 Mar 24.
+\emph{Two-stage designs for cross-over bioequivalence trials}\cr
+Stat Med. 2015 Jul 20;34(16):2403-16\cr
+Epub 2015 Mar 24 \doi{10.1002/sim.6487}
 
 Zheng Ch, Zhao L, Wang J\cr
-"Modifications of sequential designs in bioequivalence trials"\cr
+\emph{Modifications of sequential designs in bioequivalence trials}\cr
 Pharm Stat 14 (3), 180-188, May/June 2015\cr
-published online: 9 FEB 2015
+published online: 9 Feb 2015 \doi{10.1002/pst.1672}
 
 }
 \author{
@@ -123,7 +125,7 @@ The code is reasonable fast. 1E6 sims take ~ 1 sec on my machine.
 Even 1E7 sims are possible without meanwhile too much beer :-)).\cr\cr
 }
 \seealso{
-\code{\link{power.2stage}} and \code{\link{power.2stage.p}} for adptive sequential designs.
+\code{\link{power.2stage}} and \code{\link{power.2stage.p}} for adaptive sequential designs.
 }
 \examples{
 # using the Pocock alpha settings and no futility rule

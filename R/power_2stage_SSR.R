@@ -120,7 +120,7 @@ power.2stage.ssr <- function(alpha=0.05, n1, GMR, CV, targetpower=0.8,
       cat("May need some time.\n")
     }
   } else {
-    # don't have power for large sample approx.
+    # don't have power func for large sample approx.
     # moreover ssr is so fast that we don't need the power step
     pwr  <- rep(0, times=nsims)
     if(details){

@@ -1,3 +1,4 @@
+\encoding{utf-8}
 \name{power.2stage.KM}
 \alias{power.2stage.KM}
 \title{
@@ -9,7 +10,7 @@ This function calculates the empirical power of 2-stage BE studies according
 to Potvin et.al. via simulations. The Potvin methods are modified as 
 described in Karalis & Macheras to include a futility criterion Nmax 
 and to do the power calculation steps and the sample size estimation step 
-in the decision schemes with the mse (CV) \strong{and} the point estimator
+in the decision schemes with the mse (CV) \strong{and} the point estimate of T/R
 from stage 1 evaluation.
 }
 \usage{
@@ -103,7 +104,7 @@ are simulated via their associated distributions
 (normal and chi-squared distribution's).\cr\cr
 In contrast to Potvin et.al. the power calculation steps as well as the sample 
 size adaption step of the decision schemes are done using the the mse (CV) 
-\bold{and} the point estimator from stage 1.\cr
+\bold{and} the point estimate from stage 1.\cr
 This resembles the methods described in Karalis&Macheras and Karalis.  
 }
 \value{
@@ -123,20 +124,21 @@ This component is only given back if \code{is.finite(Nmax)}.}
 }
 \references{
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharm Stat 7(4), 245-62 (2008)
+\emph{Sequential design approaches for bioequivalence studies with 
+crossover designs}\cr
+Pharm Stat 7(4), 245-62 (2008) \doi{10.1002/pst.294}
 
 Karalis V and P Macheras\cr
-"An Insight into the Properties of a Two-Stage Design in Bioequivalence Studies"\cr
-Pharm. Res. 30(7) 1824-35 (2013), Epub 2013 April 9.
+\emph{An Insight into the Properties of a Two-Stage Design in Bioequivalence Studies}\cr
+Pharm. Res. 30(7) 1824-35 (2013), Epub 2013 April 9. \doi{10.1007/s11095-013-1026-3}
 
 Karalis V\cr
-"The role of the upper sample size limit in two-stage bioequivalence designs"\cr
-Int J Pharm. 2013 Nov 1;456(1):87-94. Epub 2013 Aug 14.
+\emph{The role of the upper sample size limit in two-stage bioequivalence designs}\cr
+Int J Pharm. 2013 Nov 1;456(1):87-94. Epub 2013 Aug 14. \doi{10.1016/j.ijpharm.2013.08.013}
 
 Fuglsang A\cr
-"Futility Rules in Bioequivalence Trials with Sequential Designs"\cr
-AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12.
+\emph{Futility Rules in Bioequivalence Trials with Sequential Designs}\cr
+AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12. \doi{10.1208/s12248-013-9540-0}
 }
 \author{
 D. Labes

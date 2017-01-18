@@ -16,7 +16,7 @@ export(
 import(
   PowerTOST, stats
 )
-# good practice importFrom
+# good practice would be importFrom
 #importFrom(PowerTOST, CV2se, CV2mse, OwensQ)
 #importFrom(stats, pt, qt, pnorm, qnorm, rnorm, rchisq, quantile)
 importFrom(mvtnorm, pmvt, pmvnorm, GenzBretz)

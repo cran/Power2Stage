@@ -1,3 +1,22 @@
+Version 0.4-5
+2017-01-18
+   - DOI for references in man pages added.
+   - Bug in power.2stage.p() and power.2stage.pAF() removed which causes
+     negative residual variances in case of test="anova" and imprecise power
+     values in all other cases for certain scenarios of n1, CV.
+   - Large sample approximation to the sample size adapted to deal with 
+     unsymmetrical BE acceptance ranges, one limit = Inf allowed
+   - Maintenance release to refelect changes in power calculation of
+     package PowerTOST
+   - Some small cosmetic changes in code w.r.t min.n2
+Version 0.4-4
+2016-01-21 (not released via CRAN)
+   - Method "B0" (re)introduced in power.2stage() and power.2stage.fC() which
+     employs the decision scheme of the so-called MSDBE (Modified Sequential 
+     Design for BE) of Zheng et al.
+   - Method "B" in power.2stage.p() / power.2stage.pAF() also adapted to
+     decision scheme E of Xu et al.
+   - Figures with TSD decision schemes added in /doc subdirectory.   
 Version 0.4-3
 2015-11-24
    - power2stage.fC() now has a new argument max.n which constraints the total 
@@ -30,7 +49,7 @@ Version 0.4-1
      distribution of ntotal. The nhist component was removed
    - The default of fClower in case of fCrit="PE" was changed to 0.8 in function
      power.2stage.fC()
-   - The nsims argument if missing is now set to 1E6 if you simulate for alpha
+   - The nsims argument, if missing, is now set to 1E6 if you simulate for alpha
      (i.e. with theta0 at border or outside acceptance range theta1 ... theta2)
      and to 1E5 otherwise
 Version 0.3-2
@@ -51,7 +70,7 @@ Version 0.3-1
    - Internal change of start value of sample size estimation to Zhang's
      formula (may change the extremal value of n and its mean if usePE=TRUE)
    - Function power.2stage.p() accepts now unbalanced stage 1 and uses the 
-     correct power of Welch's test in the power monitoring stepsand in 
+     correct power of Welch's test in the power monitoring steps and in 
      sample size estimation
    - Former function power.2stage.p() now available as power.2stage.pAF()
      which does the calculations exactly as described in A.Fuglsang's paper 

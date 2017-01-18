@@ -5,11 +5,22 @@
 # original 'large sample' sample size formula if diffmthreshold=0
 # author D. Labes
 # vectorizes properly if diffm is scalar and se a vector or both are vectors
+# does not give the correct answer if one acceptance limit goes to Inf
 .sampleN00 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
                        se, steps=2, bk=2, diffmthreshold=0.04)
 {
+  # handle unsymmetrical BE acceptance ranges
+  dn <- pmin(abs(diffm-ltheta1), abs(diffm-ltheta2))
+  # return Inf if diffm outside, dn=0 accomplishes that
+  dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
+
   z1 <- qnorm(1-alpha)
-  # within diffmthreshold diffm will be regarded as 0
+  # transform to limits symmetric around zero (if they are not)
+  locc    <- (ltheta1+ltheta2)/2
+  diffm   <- diffm - locc
+  ltheta1 <- ltheta1 - locc
+  ltheta2 <- -ltheta1
+  # within +-diffmthreshold diffm will be regarded as 0
   # value diffmthreshold=0.04 corresponds roughly to log(0.96)
   # with lower values there are many steps in sample size around between 0.95 and 1.
   # no longer used. Zhangs formula instead
@@ -17,10 +28,8 @@
   z2    <- ifelse(abs(diffm)>diffmthreshold, qnorm(targetpower), 
                   qnorm(1-(1-targetpower)/2))
   diffm <- ifelse(abs(diffm)>diffmthreshold, diffm, 0)
-
-  dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
-  # return Inf if diffm outside, dn=0 accomplishes that
-  dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
+  # 1-beta/2 seems only correct if ltheta1 = -ltheta2 ?
+  
   n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
   
   # round up to next even >=
@@ -35,6 +44,7 @@
 # 'large sample' sample size with one additional step via t-distribution
 # author D. Labes
 # bk = design constant, see known.designs()
+# does not vectorize if se is a vector
 .sampleN0 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
                       se, steps=2, bk=2, diffmthreshold=0.04)
 {
@@ -49,7 +59,9 @@
   z2    <- ifelse(abs(diffm)>diffmthreshold, qnorm(targetpower), qnorm(1-(1-targetpower)/2))
   diffm <- ifelse(abs(diffm)>diffmthreshold, diffm, 0)
   
-  dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  #dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  # handle unsymmetrical BE acceptance ranges, one may also be Inf, -Inf
+  dn <- pmin(abs(diffm-ltheta1), abs(diffm-ltheta2))
   # return Inf if diffm outside, dn=0 accomplishes that
   dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
   n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
@@ -60,11 +72,8 @@
     z1 <- qt(1-alpha, df=n0-2)
     z2    <- ifelse(abs(diffm)>diffmthreshold, qt(targetpower, df=n0-2), 
                     qt(1-(1-targetpower)/2, df=n0-2))
-    diffm <- ifelse(abs(diffm)>diffmthreshold, diffm, 0)
 
-    dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
     n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
-    
   }
   # make an even multiple of step (=2 in case of 2x2 cross-over)
   n0 <- steps*trunc(n0/steps)
@@ -86,16 +95,19 @@
   beta <- 1-targetpower
   z1 <- qnorm(1-alpha)
   fz <- ifelse(diffm<0, c0*exp(-7.06*diffm/ltheta1), c0*exp(-7.06*diffm/ltheta2))
+  # results in NaN if one of the acceptance range is Inf/-Inf
+  fz[is.nan(fz)|fz>=1] <- 0
   z2 <- abs(qnorm((1-fz)*beta))
   
-  dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  #dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  dn <- pmin(abs(diffm-ltheta1), abs(diffm-ltheta2))
   # return Inf if diffm outside, dn=0 accomplishes that
   dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
   n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
   
-  # make an even multiple of step (=2 in case of 2x2 cross-over)
-  n0 <- steps*trunc(n0/steps)
-
+  # round up to next even >=
+  n0 <- steps*ceiling(n0/steps)
+  
   return(n0)
 }
 
@@ -103,9 +115,16 @@
 # variant of Zhangs 'large sample' formula with 'smooth' transition from beta/2 
 # to beta and a threshold
 # vectorizes properly if diffm is scalar and se a vector or both are vectors
+# needs finite ltheta1, ltheta2!
 .sampleN0_3 <- function(alpha=0.05, targetpower=0.8, ltheta1, ltheta2, diffm, 
                         se, steps=2, bk=2)
 {
+  # difference for denominator
+  #dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
+  dn <- pmin(abs(diffm-ltheta1), abs(diffm-ltheta2))
+  # return Inf if diffm outside, dn=0 accomplishes that
+  dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
+  
   # transform to limits symmetric around zero (if they are not)
   locc    <- (ltheta1+ltheta2)/2
   diffm   <- diffm - locc
@@ -116,19 +135,15 @@
   z1   <- qnorm(1-alpha)
   beta <- 1-targetpower
   
-  c  <- abs(diffm/delta)
+  c  <- ifelse(is.finite(diffm), abs(diffm/delta), 1)
   # probability for second normal quantil
   # if c<0.2 is in general a good choice needs to be tested
   p2 <- ifelse(c<0.2, 1-(1-0.5*exp(-7.06*c))*beta, 1-beta)
   z2 <- qnorm(p2)
-  # difference for denominator
-  dn <- ifelse(diffm<0, diffm-ltheta1, diffm-ltheta2)
-  # return Inf if diffm outside, dn=0 accomplishes that
-  dn <- ifelse((diffm-ltheta1)<1.25e-5 | (ltheta2-diffm)<1.25e-5, 0, dn)
-  
+
   n0 <- (bk/2)*((z1+z2)*(se*sqrt(2)/dn))^2
-  # make an even multiple of steps (=2 in case of 2x2 cross-over)
-  n0 <- steps*trunc(n0/steps)
+  # round up to next even >=
+  n0 <- steps*ceiling(n0/steps)
 
   return(n0)
   

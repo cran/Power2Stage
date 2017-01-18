@@ -1,3 +1,4 @@
+\encoding{utf-8}
 \name{power.2stage.p}
 \alias{power.2stage.p}
 \alias{power.2stage.pAF}
@@ -8,8 +9,8 @@ Power calculation of adaptive 2-stage BE studies with 2-group parallel design
 This functions calculate the 'empirical' power of 2-stage BE studies with 
 2 parallel groups according to A. Fuglsang via simulations. 
 The Potvin decision schemes are modified to include a futility criterion Nmax 
-and to allow the sample size estimation step to be done with point estimator & 
-variabilities from stage 1.\cr\cr
+and to allow the sample size estimation step to be done with point estimate & 
+variabilities from stage 1 (full adaptive).\cr\cr
 Function \code{power.2stage.pAF()} performes exactly as described in the
 paper Fuglsang 2014, namely the power monitoring steps and the sample size
 estimation are based always on the pooled t-test.\cr
@@ -155,12 +156,13 @@ This component is only given back if \code{usePE==FALSE} or otherwise if
 }
 \references{
 Fuglsang A.\cr
-"Sequential Bioequivalence Approaches for Parallel Design"\cr
-AAPS J. 16(3), 373-378 (2014) [Epub 2014 Feb 14.]
+\emph{Sequential Bioequivalence Approaches for Parallel Design}\cr
+AAPS J. 16(3), 373-378 (2014) [Epub 2014 Feb 14.] \doi{10.1208/s12248-014-9571-1}
 
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharm Stat 7(4), 245-62 (2008)
+\emph{Sequential design approaches for bioequivalence studies with 
+crossover designs}\cr
+Pharm Stat 7(4), 245-62 (2008) \doi{10.1002/pst.294}
 }
 \author{
 D. Labes

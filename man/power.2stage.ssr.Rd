@@ -1,7 +1,9 @@
+\encoding{utf-8}
 \name{power.2stage.ssr}
 \alias{power.2stage.ssr}
 \title{
-Power of 2-stage BE studies with 2x2 crossover design with interim sample size re-estimation
+Power of 2-stage BE studies with 2x2 crossover design with interim
+sample size re-estimation
 }
 \description{
 This function calculates the empirical power (via simulations) of 2-stage BE 
@@ -120,17 +122,18 @@ ntable is only given back if \code{usePE = FALSE}}
 }
 \references{
 Golkowski D, Friede T, Kieser M\cr
-"Blinded sample size re-estimation in crossover bioequivalence trials"\cr
-Pharm Stat. 2014 May-Jun;13(3):157-62. Epub 2014 Apr 9
+\emph{Blinded sample size re-estimation in crossover bioequivalence trials}\cr
+Pharm Stat. 2014 May-Jun;13(3):157-62. Epub 2014 Apr 9. \doi{10.1002/pst.1617}
 
 Jones B, Kenward MG\cr
-"Design and Analysis of Cross-Over Trials"\cr
+\emph{Design and Analysis of Cross-Over Trials}\cr
 Third edition, Chapman and Hall/CRC, Boca Raton, Oct 2014\cr
 Chapter 12
 
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharm Stat 7(4), 245-62 (2008)
+\emph{Sequential design approaches for bioequivalence studies with 
+crossover designs}\cr
+Pharm Stat 7(4), 245-62 (2008) \doi{10.1002/pst.294}
 }
 \author{
 D. Labes

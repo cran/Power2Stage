@@ -1,19 +1,21 @@
+\encoding{utf-8}
 \name{power.2stage.fC}
 \alias{power.2stage.fC}
 \title{
 Power calculation of adaptive 2-stage BE studies (2x2 crossover) with a 
-futility criterion for the point estimator or CI
+futility criterion for the point estimate of T/R or its 90\%CI
 }
 \description{
 This function calculates the empirical power of 2-stage BE studies according
 to Potvin et al. Method B/C via simulations. The Potvin methods are modified to 
-include a futility criterion for the point estimator or for the CI and to 
-allow the sample size estimation step to be done with point estimator & mse 
+include a futility criterion for the point estimate or for its 90\%CI and to 
+allow the sample size estimation step to be done with point estimate & mse 
 of stage 1.
 }
 \usage{
-power.2stage.fC(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
-                n1, CV, GMR, targetpower = 0.8, pmethod = c("nct", "exact", "shifted"), 
+power.2stage.fC(method = c("B", "C", "B0"), alpha0 = 0.05, 
+                alpha = c(0.0294, 0.0294), n1, CV, GMR, targetpower = 0.8, 
+                pmethod = c("nct", "exact", "shifted"), 
                 usePE = FALSE, powerstep = TRUE, min.n2=0, max.n=Inf, 
                 fCrit=c("CI", "PE"), fClower, fCupper, theta0, theta1, theta2, 
                 npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, details = FALSE)
@@ -24,11 +26,15 @@ Decision schemes according to Potvin et.al. Default is "B". \cr
 Potvin method D can be obtained by choosing "C" but setting 
 \code{alpha=c(0.028,0.028)}.\cr
 Method E of Xu et al. can be obtained choosing here "B" and setting alpha's,
-futility criterion "CI", max.n and n1 according to the reference. 
-Method F can be obtained choosing here "C" with the appropriate design setting.
+futility criterion "CI", max.n and n1 according to the reference.\cr 
+Method F can be obtained choosing here "C" with the appropriate design setting 
+according to the reference.\cr
+\code{method="B0"} uses the decision scheme of so-called "MSDBE" which differs
+from B/E in case of different alpha's w.r.t. power monitoring and BE decision
+in case of power >= target power.
 }
   \item{alpha0}{
-Alpha value for the first step(s) in Potvin C, the power inspection
+Alpha value for the first step(s) in Potvin "C"", the power inspection
 and BE decision if power > targetpower.\cr
 Defaults to 0.05.
 }
@@ -43,11 +49,12 @@ Sample size of stage 1.
 Coefficient of variation of the intra-subject variability as ratio.
 }
   \item{GMR}{
-Ratio T/R to be used in Potvin "B" decision scheme (power calculations 
-in stage 1 and sample size estimation for stage 2).
+Ratio T/R to be used in decision scheme (power calculations in stage 1 and 
+sample size estimation for stage 2).
 }
   \item{targetpower}{
-Power threshold for the power to achieve in the sample size estimation step.
+Power threshold in the power monitoring steps and 
+power to achieve in the sample size estimation step.
 }
   \item{pmethod}{
 Power calculation method, also to be used in the sample size estimation for stage 2.\cr 
@@ -60,7 +67,7 @@ sample size estimation step.
   \item{usePE}{
 If \code{TRUE} the sample size estimation step is done with mse 
 \bold{and} PE of stage 1.\cr
-Defaults to \code{FALSE} in wich case the sample size is estimated with 
+Defaults to \code{FALSE} in wich case the sample size is estimated with anticipated
 (constant) GMR given as argument and mse of stage 1 (analogous to Potvin et. al.).
 }
   \item{powerstep}{
@@ -152,27 +159,29 @@ This component is only given back if \code{usePE==FALSE} or
 }
 \references{
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharm Stat 7(4), 245-62 (2008)
+\emph{Sequential design approaches for bioequivalence studies with 
+crossover designs}\cr
+Pharm Stat 7(4), 245-62 (2008) \doi{10.1002/pst.294}
 
-Schuetz H.\cr
-"Two-stage designs in bioequivalence trials"\cr
+\enc{Schütz}{Schuetz} H.\cr
+\emph{Two-stage designs in bioequivalence trials}\cr
 Eur J Clin Pharmacol 71(3):271-81 (2015)\cr
-published inline 22 Jan 2015
+published online 22 Jan 2015 \doi{10.1007/s00228-015-1806-2}
 
 Kieser M, Rauch G\cr
-"Two-stage designs for cross-over bioequivalence trials"\cr
-Stat Med 2015 Mar 24\cr
-epub ahead of print
+\emph{Two-stage designs for cross-over bioequivalence trials}\cr
+Stat Med. 2015 Jul 20;34(16):2403-16\cr
+Epub 2015 Mar 24 \doi{10.1002/sim.6487}
 
 Zheng Ch, Zhao L, Wang J\cr
-"Modifications of sequential designs in bioequivalence trials"\cr
+\emph{Modifications of sequential designs in bioequivalence trials}\cr
 Pharm Stat 14 (3), 180-188, May/June 2015\cr
-published online: 9 FEB 2015
+published online: 9 Feb 2015 \doi{10.1002/pst.1672}
 
 Xu et al.\cr
-"Optimal adaptive sequential designs for crossover bioequivalence studies"\cr
-Pharm Stat. 2015 Nov 5. doi: 10.1002/pst.1721. [Epub ahead of print]
+\emph{Optimal adaptive sequential designs for crossover bioequivalence studies}\cr
+Pharm Stat. 2016 Jan-Feb;15(1):15-27\cr
+[Epub ahead of print] 2015 Nov 5 \doi{10.1002/pst.1721} 
 }
 \author{
 D. Labes

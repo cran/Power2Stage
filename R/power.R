@@ -29,8 +29,7 @@
 .power.TOST <- function(alpha=0.05, ltheta1, ltheta2, diffm, sem, df)
 {
   tval   <- qt(1 - alpha, df, lower.tail = TRUE)
-  # 0/0 -> NaN in case diffm=ltheta1 or diffm=ltheta2
-  # and se=0!
+  # 0/0 -> NaN in case diffm=ltheta1 or diffm=ltheta2 and sem=0!
   delta1 <- (diffm-ltheta1)/sem
   delta2 <- (diffm-ltheta2)/sem
   # is this correct?
@@ -55,12 +54,10 @@
   # This gives the same values (within certain precision) as Ben's power.1TOST
   # aka power.TOST(..., method="mvt").
   # Can also be checked via function power.TOST.sim().
-
   R[R<=0] <- Inf
-  # comment above out and write
+  # to check SAS Proc power values comment above out and write
   # R <- abs(R)
-  # to check SAS Proc power values
-  
+
   # to avoid numerical errors in OwensQ implementation
   if (min(df)>10000){
     # 'shifted' normal approximation Jan 2015
@@ -68,7 +65,11 @@
     tval <- qnorm(1-alpha)
     p1   <- pnorm(tval-delta1)
     p2   <- pnorm(-tval-delta2)
-    return(p2-p1)
+    # may give negative values 
+    # thus set to zero
+    pwr <- p2-p1
+    pwr[pwr<0] <- 0
+    return(pwr)
   }
   if (min(df)>=5000 & min(df<=10000)) {
     # approximation via non-central t-distribution
@@ -90,11 +91,12 @@
     p1[i] <- OwensQ(ddf,  ttt, delta1[i], 0, R[i])
     p2[i] <- OwensQ(ddf, -ttt, delta2[i], 0, R[i])
   }
-  #browser()
-  pow <- p2-p1
-  # due to numeric inaccuracies power < 0?
-  pow[pow<0] <- 0
-  return( pow )
+
+  pwr <- p2-p1
+  # due to numeric inaccuracies power < 0
+  # paranoia
+  pwr[pwr<0] <- 0
+  return( pwr )
 }
 
 #------------------------------------------------------------------------------
@@ -121,7 +123,7 @@
     # give a warning if attr(prob,"msg") not equal "Normal completion"?
     if(attr(prob, which="msg")!="Normal Completion")
       warning("pmvt returned message ", attr(prob, which="msg"), call.=FALSE)
-    pow[i] <- prob[i]
+    pow[i] <- prob[1]
   }
   pow
 }
@@ -142,7 +144,8 @@
   delta1[is.nan(delta1)] <- 0
   delta2[is.nan(delta2)] <- 0
   
-  pow <- pt(-tval, df, ncp=delta2)-pt(tval, df, ncp=delta1)
+  # suppress warnings with regard to insufficient precision of nct
+  pow <- suppressWarnings(pt(-tval, df, ncp=delta2)-pt(tval, df, ncp=delta1))
   pow[pow<0] <- 0 # this is to avoid neg. power due to approx. (vector form)
   
   return(pow)
@@ -169,6 +172,7 @@
 	
 	return(pow)
 }
+
 #------------------------------------------------------------------------------
 # function for merging the various power calculations
 .calc.power <- function(alpha=0.05, ltheta1, ltheta2, diffm, sem, df, method="exact")
@@ -177,11 +181,11 @@
       method,
       exact=.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       owenq=.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
+      mvt=  .power.1TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       nct=  .approx.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       noncentral=.approx.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       shifted=.approx2.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       central=.approx2.power.TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
-      mvt=.power.1TOST(alpha, ltheta1, ltheta2, diffm, sem, df),
       stop("Method '", method, "' unknown!\n", call.=TRUE)
   ) 
   return(pow)

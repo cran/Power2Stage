@@ -37,12 +37,12 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     if (n1%%2!=0)  warning("Number of subjects in stage 1 should be even.\n",
                            "  Will be truncated to even.", immediate. = TRUE)
     n1 <- 2*trunc(n1/2)
-    ns1T  <- ns1R <- n1/2
+    n1T <- n1R <- n1/2
   } else {
-    ns1T <- n1[1]
-    ns1R <- n1[2]
+    n1T <- n1[1]
+    n1R <- n1[2]
   }
-  n1 <- ns1T+ns1R
+  n1 <- n1T+n1R
   
   if (missing(GMR)) GMR <- 0.95
   
@@ -89,26 +89,26 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   
 # ----- stage 1 ----------------------------------------------------------
   
-  nT    <- ns1T; nR <- ns1R # short hand variables
+  nT <- n1T; nR <- n1R # short hand variables
   # do we need this?
   Cfact <- bk/n1
-  df    <- ns1T + ns1R -2
+  df    <- n1T + n1R -2
   tval  <- qt(1-alpha[1], df) # ANOVA and t-test
   # simulate means (log domain) via normal distributions
   # astonishing enough the m1T are not the same, except the sign, 
   # if mlog=log(0.8) or mlog=log(1.25)
   # this is different from the situation of crossover where we simulate only
   # one mean, namely the difference
-  m1T  <- rnorm(n=nsims, mean=mlog, sd=sqrt(varT/ns1T))
-  m1R  <- rnorm(n=nsims, mean=0, sd=sqrt(varR/ns1R))
+  m1T  <- rnorm(n=nsims, mean=mlog, sd=sqrt(varT/n1T))
+  m1R  <- rnorm(n=nsims, mean=0, sd=sqrt(varR/n1R))
   # point est.
   pes   <- m1T-m1R
   # simulate variances via chi-squared distribution
-  varsT  <- varT*rchisq(n=nsims, df=ns1T-1)/(ns1T-1)
-  varsR  <- varR*rchisq(n=nsims, df=ns1R-1)/(ns1R-1)
+  varsT  <- varT*rchisq(n=nsims, df=n1T-1)/(n1T-1)
+  varsR  <- varR*rchisq(n=nsims, df=n1R-1)/(n1R-1)
 
-  Vpooled <- ((ns1T-1)*varsT + (ns1R-1)*varsR)/(n1-2)
-  se.fact <- sqrt(bkni*(1/ns1T+1/ns1R))
+  Vpooled <- ((n1T-1)*varsT + (n1R-1)*varsR)/(n1-2)
+  se.fact <- sqrt(bkni*(1/n1T+1/n1R))
 
   if(method=="C"){
     # if method=C then calculate power for alpha0=0.05 and plan GMR
@@ -150,7 +150,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
   BE1 <- rep.int(NA, times=length(Vpooled_tmp))
   # calculate CI for alpha=alpha1
   if (test=="t-test" || test=="anova"){
-    hw    <- tval*sqrt(Vpooled_tmp)*se.fact
+    hw  <- tval*sqrt(Vpooled_tmp)*se.fact
   } else {
     # Welch's t-test
     se  <- sqrt(varsT_tmp/nT + varsR_tmp/nR)
@@ -160,6 +160,7 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     # we need dfs and se in following power monitoring step, so don't rm()!
   }
   rm(varsT_tmp, varsR_tmp)
+  
   lower <- pes_tmp - hw
   upper <- pes_tmp + hw
   BE1   <- lower>=ltheta1 & upper<=ltheta2
@@ -167,10 +168,11 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     #if BE met -> PASS and stop
     #if not BE -> goto sample size estimation i.e flag BE1 as NA (not yet decided)
     BE1[!BE1] <- NA
-  } else { 
-    # method B: evaluate power at alpha[1] and planGMR
+  } else {
+    # method B/E: evaluate power at alpha[2] and planGMR
+    # should we have here also "B0"?
     if (test=="t-test" || test=="anova"){
-      pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
+      pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
                          diffm=lGMR, sem=sqrt(Vpooled_tmp)*se.fact, df=df, 
                          method=pmethod)
     } else {
@@ -178,14 +180,41 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
       # necessary to truncate dfs? in case of pmethod=="exact"?
       # since OwensQOwen needs integer Df's
       if(pmethod=="exact") dfs <- trunc(dfs)
-      pwr <- .calc.power(alpha=alpha[1], ltheta1=ltheta1, ltheta2=ltheta2, 
+      pwr <- .calc.power(alpha=alpha[2], ltheta1=ltheta1, ltheta2=ltheta2, 
                          diffm=lGMR, sem=se, df=dfs, method=pmethod)
-      #now we re done with them
-      rm(se, dfs)
     }  
+    # this is decision scheme of MSDBE in case of alpha[1]!=alpha[2]
     # if BE met then decide BE regardless of power
     # if not BE and power<0.8 then goto stage 2
-    BE1[ !BE1 & pwr<targetpower] <- NA 
+    #BE1[ !BE1 & pwr<targetpower] <- NA 
+    
+    # Xu et al., Potvin method E:
+    # if not BE and if power >= 0.8 (targetpower) make a second BE evaluation 
+    # with alpha[2]
+    # only if alpha[1] != alpha[2] necessary, but works also without if(...)
+    BE12  <- BE1 # reserve memory
+    BE11  <- BE1
+    # calculate CI for alpha=alpha2
+    if (test=="t-test" || test=="anova"){
+      hw <- qt(1-alpha[2], df)*sqrt(Vpooled_tmp)*se.fact
+    } else {
+      # Welch's t-test
+      hw <- qt(1-alpha[2], dfs)*se
+      # now we are done with them
+      rm(dfs, se)
+    }
+    lower <- pes_tmp - hw
+    upper <- pes_tmp + hw
+    BE12 <- lower>=ltheta1 & upper<=ltheta2
+    # if BE(a1) then BE1=TRUE, regardless of power
+    BE1[BE11==TRUE] <- TRUE 
+    # if not BE(a1) but power >= 0.8 then make BE decision at alpha2
+    BE1[BE11==FALSE & pwr>=targetpower] <- BE12[BE11==FALSE & pwr>=targetpower]
+    # if not BE(a1) and power<0.8 then not decided yet (marker NA)
+    # will be further decided by futility criterion
+    BE1[BE11==FALSE & pwr<targetpower]  <- NA 
+    # keep care of memory
+    rm(BE11, BE12)
   }
   # combine 'stage 0' from method C and stage 1
   BE[is.na(BE)] <- BE1
@@ -222,8 +251,8 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     m1R <- m1R[is.na(BE)]
     varsT <- varsT[is.na(BE)]
     varsR <- varsR[is.na(BE)]
-    BE2      <- rep.int(NA, times=length(Vpooled_tmp))
-    s2       <- rep.int( 2, times=length(Vpooled_tmp))
+    BE2   <- rep.int(NA, times=length(Vpooled_tmp))
+    s2    <- rep.int( 2, times=length(Vpooled_tmp))
     #------ sample size for stage 2 ---------------------------------------
     ptms <- proc.time()
     # sse always balanced
@@ -274,9 +303,9 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     
     # The next is Jiri's strategy I think
     # nts are even, nts/2 for T and R (balanced at the end) 
-    ns2T <- ifelse(nts/2>ns1T, nts/2 - ns1T, 0)
-    ns2R <- ifelse(nts/2>ns1R, nts/2 - ns1R, 0)
-    n2 <- ns2T + ns2R
+    n2T <- ifelse(nts/2>n1T, nts/2 - n1T, 0)
+    n2R <- ifelse(nts/2>n1R, nts/2 - n1R, 0)
+    n2 <- n2T + n2R
 
     if(details){
       cat("Time consumed (secs):\n")
@@ -304,59 +333,78 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
       varsT <- varsT[is.na(BE2)]
       varsR <- varsR[is.na(BE2)]
       n2    <- n2[is.na(BE2)]
-      ns2T  <- ns2T[is.na(BE2)]
-      ns2R  <- ns2R[is.na(BE2)]
+      n2T  <- n2T[is.na(BE2)]
+      n2R  <- n2R[is.na(BE2)]
     } # end of futility Nmax
+
     # ----- simulate stage 2 data ------
     nsim2 <- length(pes_tmp)
     # to avoid warnings for ns2X==0 in rnorm() and ns2X<=1 in rchisq()
     ow    <- options("warn")
     options(warn=-1)
-    ms2T  <- ifelse(ns2T>0, rnorm(n=nsim2, mean=mlog, sd=sqrt(varT/ns2T)), 0)
-    ms2R  <- ifelse(ns2R>0, rnorm(n=nsim2, mean=0, sd=sqrt(varR/ns2R)), 0)
+    m2T  <- ifelse(n2T>0, rnorm(n=nsim2, mean=mlog, sd=sqrt(varT/n2T)), 0)
+    m2R  <- ifelse(n2R>0, rnorm(n=nsim2, mean=0, sd=sqrt(varR/n2R)), 0)
     # means T & R
-    nT <- ns1T+ns2T
-    nR <- ns1R+ns2R
-    mT <- (ns1T*m1T+ns2T*ms2T)/nT
-    mR <- (ns1R*m1R+ns2R*ms2R)/nR
+    nT <- n1T+n2T
+    nR <- n1R+n2R
+    mT <- (n1T*m1T + n2T*m2T)/nT
+    mR <- (n1R*m1R + n2R*m2R)/nR
     # point est.
     pes <- mT-mR
     # means for s1, s2 (stages)
-    m1  <- (ns1T*m1T + ns1R*m1R)/(ns1T+ns1R)
-    m2  <- ifelse((ns2T+ns2R)>0, (ns2T*ms2T + ns2R*ms2R)/(ns2T+ns2R),0)
+    m1  <- (n1T*m1T + n1R*m1R)/(n1T+n1R)
+    m2  <- ifelse((n2T+n2R)>0, (n2T*m2T + n2R*m2R)/(n2T+n2R),0)
     # total mean
-    mt  <- (nT*mT+nR*mR)/(nT+nR)
+    mt  <- (nT*mT + nR*mR)/(nT+nR)
     # simulate variances via chi-squared distribution
     # attention! in case of ns2X==1 rchisq gives NaN!
     # TODO: work out the correct way for ns2X==1
     # here we set it meanwhile to zero. result?
-    vars2T  <- ifelse(ns2T>1, varT*rchisq(n=nsim2, df=ns2T-1)/(ns2T-1), 0)
-    vars2R  <- ifelse(ns2R>1, varR*rchisq(n=nsim2, df=ns2R-1)/(ns2R-1), 0)
+    vars2T  <- ifelse(n2T>1, varT*rchisq(n=nsim2, df=n2T-1)/(n2T-1), 0)
+    vars2R  <- ifelse(n2R>1, varR*rchisq(n=nsim2, df=n2R-1)/(n2R-1), 0)
     # reset options
     options(ow) 
     
     # vars T/R over stage 1, stage 2
-    # s2y = sum of y squared
-    # if ns2X==0 then we get here originally NA
-    #sy2T <- (ns1T-1)*varsT+m1T^2/ns1T + (ns2T-1)*vars2T+ms2T^2/ns2T
-    sy2T <- (ns1T-1)*varsT+m1T^2/ns1T
-    sy2T <- ifelse(ns2T>0, sy2T+(ns2T-1)*vars2T+ms2T^2/ns2T, sy2T)
-    sy2R <- (ns1R-1)*varsR+m1R^2/ns1R
-    sy2R <- ifelse(ns2R>0, sy2R+(ns2R-1)*vars2R+ms2R^2/ns2R, sy2R)
-    varsT <- (sy2T - mT^2/nT)/(nT-1)
-    varsR <- (sy2R - mR^2/nR)/(nR-1)
-    rm(sy2T, sy2R)
+    # sy2 = sum of y squared
+    # SQ = sum((y-mean)^2) = sum(y^2) - sum(y)^2/n = sum(y^2) - n*mean^2
+    # var = SQ/(n-1)
+    # bug in pre 0.4-5 (was mean^2/n instead of n*mean^2) which lead to
+    # negativ residual variance and therefore BE = NA
+    # example:
+    # power.2stage.p(CV=0.4, n1=10, theta0=0.8, test="a")
+    sy2T <- (n1T-1)*varsT + n1T*m1T^2
+    sy2T <- ifelse(n2T>0, sy2T + (n2T-1)*vars2T + n2T*m2T^2, sy2T)
+    sy2R <- (n1R-1)*varsR + n1R*m1R^2
+    sy2R <- ifelse(n2R>0, sy2R + (n2R-1)*vars2R + n2R*m2R^2, sy2R)
+    varsT <- (sy2T - nT*mT^2)/(nT-1)
+    varsR <- (sy2R - nR*mR^2)/(nR-1)
+    sy2   <- sy2T+sy2R
+    sqtot <- (sy2-(nT+nR)*mt^2)
+    rm(sy2T, sy2R, sy2)
     # calculate CI for stage 2 with alpha[2]
     if (test=="t-test" || test=="anova"){
       Vpooled <- ((nT-1)*varsT + (nR-1)*varsR)/(nT+nR-2)
       dfs <- (nT+nR-2)
       if (test=="anova"){
+        # subtract stage effect
         # no subjects in stage 2 ((ns2R+ns2T)==0) may occure in case of 
         # high n1 and/or haybittle-peto alpha's
-        Vpooled <- ifelse(ns2R+ns2T>0,
-                         (dfs*Vpooled - n1*(m1-mt)^2 - n2*(m2-mt)^2)/(dfs-1),
+        # in the next expression Vpooled may come out as negative! why?
+        # Example: CV=0.4, n1=10
+        Vpooled <- ifelse(n2R+n2T>0,
+                          (dfs*Vpooled - (n1*(m1-mt)^2 + n2*(m2-mt)^2))/(dfs-1),
                           Vpooled)
-        dfs <- ifelse(ns2R+ns2T>0, dfs-1, dfs)
+        # Vpooled according to potvin 2x2 crossover, Ben's Vermutung SSmean
+        # but with (1/n1+1/n2) instead of (4/n1+4/n2)
+        # Vp <- ifelse(n2R+n2T>0,
+        #              (dfs*Vpooled - (m1-m2)^2/(1/n1+1/n2))/(dfs-1),
+        #              Vpooled)
+        # according to Anders paper
+        # Vp <- ifelse(n2R+n2T>0,
+        #              (sqtot - (n1*(m1-mt)^2 + n2*(m2-mt)^2)    # stage
+        #               -(nT*(mT-mt)^2 + nR*(mR-mt)^2))/(dfs-1), # treatment
+        #               Vpooled)
       }
       hw  <- qt(1-alpha[2],dfs)*sqrt(bkni*Vpooled*(1/nT+1/nR))
       rm(Vpooled, dfs)
@@ -375,14 +423,14 @@ power.2stage.p <- function(method=c("B","C"), alpha0=0.05, alpha=c(0.0294,0.0294
     ntot[is.na(BE)] <- n1+n2
     BE[is.na(BE)]   <- BE2
     # done with them
-    rm(BE2, nts, lower, upper, hw, ns2T, ns2R, ms2T, ms2R)
+    rm(BE2, nts, lower, upper, hw, n2T, n2R, m2T, m2R)
   } # end stage 2 calculations
   # take care of memory
   rm(pes_tmp, pes)
   # the return list
   res <- list(design="2 parallel groups", method=method, 
               alpha0=ifelse(method=="C",alpha0,NA), alpha=alpha, CV=CV, 
-              n1=c(ns1T, ns1R), GMR=GMR, test=test, targetpower=targetpower, 
+              n1=c(n1T, n1R), GMR=GMR, test=test, targetpower=targetpower, 
               pmethod=pmethod, 
               theta0=exp(mlog), theta1=theta1, theta2=theta2, 
               usePE=usePE, Nmax=Nmax, nsims=nsims,

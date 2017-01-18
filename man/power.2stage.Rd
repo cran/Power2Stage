@@ -1,3 +1,4 @@
+\encoding{utf-8}
 \name{power.2stage}
 \alias{power.2stage}
 \title{
@@ -7,10 +8,10 @@ Power calculation of adaptive 2-stage BE studies with 2x2 crossover design
 This function calculates the empirical power of 2-stage BE studies according
 to Potvin et al. via simulations. The Potvin methods are modified to include
 a futility criterion Nmax and to allow the sample size estimation step to be 
-done with point estimator & mse of stage 1.
+done with point estimate & mse of stage 1.
 }
 \usage{
-power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
+power.2stage(method = c("B", "C", "B0"), alpha0 = 0.05, alpha = c(0.0294, 0.0294), 
              n1, GMR, CV, targetpower = 0.8, pmethod = c("nct", "exact", "shifted"),
              usePE = FALSE, Nmax = Inf, min.n2=0, theta0, theta1, theta2,  
              npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, details = FALSE)
@@ -19,10 +20,13 @@ power.2stage(method = c("B", "C"), alpha0 = 0.05, alpha = c(0.0294, 0.0294),
   \item{method}{
 Decision schemes according to Potvin et.al. Default is "B". \cr
 Potvin method D can be obtained by choosing "C" but setting 
-\code{alpha=c(0.028,0.028)}.
+\code{alpha=c(0.028,0.028)}\cr.
+\code{method="B0"} uses the decision scheme of so-called "MSDBE" which differs
+from B/E in case of different alpha's w.r.t. power monitoring and BE decision
+in case of power >= target power.
 }
   \item{alpha0}{
-Alpha value for the first step(s) in Potvin C, the power inspection
+Alpha value for the first step(s) in Potvin "C"", the power inspection
 and BE decision if power > targetpower.\cr
 Defaults to 0.05.
 }
@@ -41,7 +45,7 @@ in stage 1 and sample size estimation for stage 2).
 Coefficient of variation of the intra-subject variability as ratio.
 }
   \item{targetpower}{
-Power threshold in the first step of Potvin "C" and 
+Power threshold in the power monitoring steps and 
 power to achieve in the sample size estimation step.
 }
   \item{pmethod}{
@@ -130,40 +134,48 @@ This component is only given back if \code{usePE==FALSE} or otherwise if
 }
 \references{
 Potvin D et al.\cr
-"Sequential design approaches for bioequivalence studies with crossover designs"\cr
-Pharm Stat. 7(4), 245-62 (2008)
+\emph{Sequential design approaches for bioequivalence studies with 
+crossover designs}\cr
+Pharm Stat 7(4), 245-62 (2008) \doi{10.1002/pst.294}
 
 Montague TH et al.\cr
-"Additional results for 'Sequential design approaches for bio-equivalence studies 
-with crossover designs'"\cr
-Pharm Stat. 2012 Jan-Feb;11(1):8-13. Epub 2011 Feb 10.
+\emph{Additional results for 'Sequential design approaches for bio-equivalence studies 
+with crossover designs'}\cr
+Pharm Stat. 2012 Jan-Feb;11(1):8-13. Epub 2011 Feb 10. \doi{10.1002/pst.483}
 
 Fuglsang A\cr
-"Controlling type I errors for two-stage bioequivalence study designs"\cr
-Clinical Research and Regulatory Affairs 28(4), 100-105 (2011)
+\emph{Controlling type I errors for two-stage bioequivalence study designs}\cr
+Clinical Research and Regulatory Affairs 28(4), 100-105 (2011)\cr
+\doi{10.3109/10601333.2011.631547}
 
 Fuglsang A\cr
-"Sequential Bioequivalence Trial Designs with Increased Power and 
-Controlled Type I Error Rates"\cr
-AAPS J. 2013 Jul; 15(3):659-61. Epub 2013 Mar 30.
+\emph{Sequential Bioequivalence Trial Designs with Increased Power and 
+Controlled Type I Error Rates}\cr
+AAPS J. 2013 Jul; 15(3):659-61. Epub 2013 Mar 30. \doi{10.1208/s12248-013-9475-5}
 
 Fuglsang A\cr
-"Futility Rules in Bioequivalence Trials with Sequential Designs"\cr
-AAPS J. 2014 Jan; 16(1):79-82. Epub 2013 Nov 12.
+\emph{Futility Rules in Bioequivalence Trials with Sequential Designs}\cr
+AAPS J. 2014 Jan;16(1):79-82. Epub 2013 Nov 12. \doi{10.1208/s12248-013-9540-0}
 
-Schuetz H.\cr
-"Two-stage designs in bioequivalence trials"\cr
+\enc{Schütz}{Schuetz} H.\cr
+\emph{Two-stage designs in bioequivalence trials}\cr
 Eur J Clin Pharmacol 71(3):271-81 (2015)\cr
-published inline 22 Jan 2015
+published online 22 Jan 2015 \doi{10.1007/s00228-015-1806-2}
 
 Kieser M, Rauch G\cr
-"Two-stage designs for cross-over bioequivalence trials"\cr
-Stat Med. 2015 Jul 20;34(16):2403-16. Epub 2015 Mar 24.
+\emph{Two-stage designs for cross-over bioequivalence trials}\cr
+Stat Med. 2015 Jul 20;34(16):2403-16\cr
+Epub 2015 Mar 24 \doi{10.1002/sim.6487}
 
 Zheng Ch, Zhao L, Wang J\cr
-"Modifications of sequential designs in bioequivalence trials"\cr
+\emph{Modifications of sequential designs in bioequivalence trials}\cr
 Pharm Stat 14 (3), 180-188, May/June 2015\cr
-published online: 9 Feb 2015
+published online: 9 Feb 2015 \doi{10.1002/pst.1672}
+
+Xu et al.\cr
+\emph{Optimal adaptive sequential designs for crossover bioequivalence studies}\cr
+Pharm Stat. 2016 Jan-Feb;15(1):15-27\cr
+[Epub ahead of print] 2015 Nov 5 \doi{10.1002/pst.1721} 
 }
 \author{
 D. Labes
