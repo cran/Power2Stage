@@ -1,18 +1,15 @@
 # --------------------------------------------------------------------------
 # power (or alpha) of 2-stage group sequential 2x2 crossover studies 
-# with no sample size adaption (n1, n2 predefined)
+# with no sample size adaption (n1, n2 predefined),
+# but no BE decision at interim, only a check of a futility rule
 #
 # author D.Labes
 # --------------------------------------------------------------------------
-# require(PowerTOST)
 
-power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1, 
-                            theta2,  fCrit=c("CI", "PE"), fClower, fCupper, 
+power.2stage.GSf <- function(alpha=c(0.05,0.05), n, CV, theta0, theta1, 
+                            theta2,  fCrit=c("CI","PE"), fClower, fCupper, 
                             nsims, setseed=TRUE, details=FALSE)
 {
-  # Check if called with .2stage. version
-  check2stage(fname=as.character(sys.call())[1])
-
   if (missing(CV)) stop("CV must be given!")
   if (CV<=0)       stop("CV must be >0!")
   
@@ -31,8 +28,8 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   }
   
   fCrit <- match.arg(fCrit)
-  if (missing(fClower) & missing(fCupper))  fClower <- 0 # no futility crit.
-  if (fClower<0) fClower <- 0 # silently correct it
+  if (missing(fClower) & missing(fCupper))  fClower <- 0.9
+  if (fClower<0) fClower <- stop("fClower not correct.")
   if (missing(fClower) & !missing(fCupper)) fClower <- 1/fCupper
   if (!missing(fClower) & missing(fCupper)) fCupper <- 1/fClower
 
@@ -53,8 +50,8 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   lfC1   <- log(fClower)
   lfC2   <- log(fCupper)
   # reserve memory
-  BE     <- rep.int(TRUE, times=nsims)
-  
+  BE     <- rep.int(NA, times=nsims)
+  stage  <- rep.int(1, times=nsims)
 # ----- stage 1 ----------------------------------------------------------
   Cfact <- bk/n[1]
   df    <- n[1]-2
@@ -69,41 +66,26 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   hw <- tval*sqrt(Cfact*mses)
   lower <- pes - hw
   upper <- pes + hw
-  # fail or pass
-  BE   <- lower>=ltheta1 & upper<=ltheta2
   rm(hw)
-
-  # ----- stage 2 ---------------------------------------------------------
-  # only those not BE in stage 1
-  stage <- rep.int(1, times=length(BE))
-  stage[BE==FALSE] <- 2
-  # any power criterion? aka futility criterion?
+  # futility 
+  # s2==TRUE is futil 
+  #browser()
   if (fCrit=="PE"){
-    # rule out those where point est. is not in acceptance range
-    # or not in a prespecified range, f.i. 0.85 ... 1/0.85=1.176471
-    s2 <- (pes>=lfC1 & pes<=lfC2) & stage==2
+    # pe not in a prespecified range, f.i. 0.9 ... 1/0.9=1.1111
+    s2 <- (pes<lfC1 | pes>lfC2)
   } else {
-    # another possibility is Gould (phi=1):
-    # rule out those with CI totally outside acceptance range
-    # to be in line with power.tsd.fC() use the 90% CI
-    # 90% (!) CI outside
-    tval0   <- qt(1-0.05, df)
-    hw      <- tval0*sqrt(Cfact*mses)
-    lower   <- pes - hw
-    upper   <- pes + hw
-    s2 <- !(lower>lfC2 | upper<lfC1) & stage==2
-    # or not in a prespecified range, f.i. 0.85 ... 1/0.85=1.176471
-    # Gould phi=0 reads: CI doesnt contain zero (1 in orginal domain)
+    # rule out those with CI totally outside futility range
+    s2 <- (lower>lfC2 | upper<lfC1)
   }
-  stage[s2==TRUE]  <- 2
-  stage[s2==FALSE] <- 1
-  rm(hw, lower, upper)
+  stage[s2==TRUE]  <- 1
+  stage[s2==FALSE] <- 2
+  BE[s2==TRUE] <- FALSE  # stop due to futility
   
   ns <- rep.int(1, times=length(BE))
-  ns[s2==FALSE] <- n[1]
-  ns[s2==TRUE]  <- n[1]+n[2]
+  ns[s2==TRUE]  <- n[1]
+  ns[s2==FALSE] <- n[1]+n[2]
   
-  nsims2  <- sum(s2)
+  nsims2  <- sum(s2==FALSE)
 
   # time for stage 1
   if(details){
@@ -112,8 +94,8 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
   }
 
   if (nsims2>0){
-    m1    <- pes[s2==TRUE]
-    SS1   <- (n[1]-2)*mses[s2==TRUE]
+    m1    <- pes[s2==FALSE]
+    SS1   <- (n[1]-2)*mses[s2==FALSE]
     # --- simulate stage 2 data
     Cfact <- bk/n[2]
     sdm   <- sqrt(mse*Cfact)
@@ -125,10 +107,13 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
     # --- poole over stage 1 & stage 2 data
     # pool according to Potvin et al.
     ntot <- sum(n)
-    df2  <- ntot-3 # including stage
-    tval2 <- qt(1-alpha[2], df2)
+    # including stage? 
     # The Canada guidance talks: "This method precludes the need for 
-    # a stage effect in the model" -> setting SSmean to zero?
+    # a stage effect in the model" -> setting SSmean to zero and df2=not-2?
+    # if we do that we obtain an alpha inflation with both alphas 0.05! why ???
+    df2  <- ntot-3 
+    #df2  <- ntot-2 
+    tval2 <- qt(1-alpha[2], df2)
     SSmean <- (m1-m2)^2/(2/n[1]+2/n[2])
     #SSmean <- 0
     # mean stage 1 + stage 2
@@ -145,7 +130,7 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
     # take care of memory
     rm(hw, lower, upper)
     # --- combine BE and BE2
-    BE[s2==TRUE] <- BE2
+    BE[s2==FALSE] <- BE2
   }
 
   # the return list
@@ -173,4 +158,4 @@ power.2stage.GS <- function(alpha=c(0.0294,0.0294), n, CV, theta0, theta1,
 } #end function
 
 # alias of the function
-power.tsd.GS <- power.2stage.GS
+power.tsd.GSf <- power.2stage.GSf

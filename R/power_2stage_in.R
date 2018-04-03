@@ -5,12 +5,17 @@
 power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV, 
                             targetpower = 0.8, theta0, theta1, theta2, 
                             GMR, usePE = FALSE, min.n2 = 4, max.n = Inf, 
-                            fCpower = targetpower,
-                            fCrit = NULL, fClower, fCupper, fCNmax, 
+                            fCpower = targetpower, 
+                            fCrit = "CI", fClower, fCupper, fCNmax, 
                             ssr.conditional = c("error_power", "error", "no"),
                             pmethod = c("nct", "exact", "shifted"), 
                             npct = c(0.05, 0.5, 0.95), nsims, setseed = TRUE, 
                             details = FALSE) {
+  
+  # Check if called with .2stage. version
+  check2stage(fname=as.character(sys.call())[1])
+  
+  
   # Computes Power or Type I Error rate for the two-stage design scheme
   # based on the inverse normal method. Several design schemes are possible:
   # main scheme is according to Maurer et al
@@ -34,7 +39,7 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
   #   max.n: Maximum overall sample size (stage 1 + stage 2) 
   #   fCpower: Threshold for power monitoring step to decide on futility 
   #            for cases 'not BE' after stage 1
-  #   fCrit: Futility criterion to use: PE, CI or Nmax or a combination thereof
+  #   fCrit: Futility criterion to use: CI, PE, Nmax or No
   #   fClower: Lower futility limit for PE or CI of stage 1
   #   fCupper: Upper futility limit for PE or CI of stage 1
   #   fCNmax: If re-estimated sample size n2 is such that n1+n2 > fCNmax,
@@ -63,20 +68,20 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
   if (length(alpha) == 1 && missing(weight))
     weight <- if (max.comb.test) c(0.5, 0.25) else 0.5
   if (length(alpha) == 2) {
-    if (missing(weight))
+    if (missing(weight)) {
       stop("weight must be specified.")
-    message(paste0("Note: It is assumed that the specified alpha values are in", 
-                   " line with the specified max.comb.test argument."))
+    } else {
+      message(paste0("Note: Adjusted alphas are specified, it is assumed that",
+                     " the specified weight(s) are in line with the alpha",
+                     " values."))
+    }
   }
-  if (length(alpha) == 2 && !missing(weight))
-    message(paste0("Note: Adjusted alphas are specified, it is assumed that the",
-                   " specified weight(s) are in line with the alpha values."))
   lw <- length(weight)
   if (max.comb.test) {
-    if (length(alpha) != 2 && lw != 2)
+    if (lw != 2)
       stop("Two weights, w and w*, are required for maximum combination test.")
   } else {
-    if (length(alpha) == 1 && lw != 1)
+    if (lw != 1)
       stop("One weight, w, is required for standard combination test.")
   }
   if (any(weight <= 0) || any(weight >= 1))
@@ -115,23 +120,31 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
     stop("GMR must be within acceptance range!")
   
   # Check futility criterion
-  if (!is.null(fCrit)) {
-    fCrit <- tolower(fCrit)
-    fcrit_nms <- c("pe", "ci", "nmax")  # correct possibilities
-    nms_match <- fcrit_nms %in% fCrit  # check which fCrits are given
-    if (sum(nms_match) == 0)
-      stop("fCrit not correctly specified.")
-    if (nms_match[1]) {  # PE
-      if (missing(fClower) && missing(fCupper))  fClower <- theta1
-      if (missing(fClower) && !missing(fCupper)) fClower <- 1/fCupper
-      if (!missing(fClower) && missing(fCupper)) fCupper <- 1/fClower
+  stopifnot(is.character(fCrit))
+  fCrit <- tolower(fCrit)
+  fcrit_nms <- c("ci", "pe", "nmax", "no")  # correct possibilities
+  nms_match <- fcrit_nms %in% fCrit  # check which fCrits are given
+  if (sum(nms_match) == 0)
+    stop("fCrit not correctly specified.")
+  if (nms_match[4]) { # No futility criterion
+    if (sum(nms_match[1:3]) > 0) {
+      message("No futility will be applied.")
     }
-    if (nms_match[2]) {  # CI
-      if (nms_match[1]) {
+    fClower <- 0
+    fCupper <- Inf
+    fCNmax <- Inf
+  } else {
+    if (nms_match[1]) {  # CI
+      if (nms_match[2]) {
         message("Both PE and CI specified for futility, PE will be ignored.")
         nms_match[1] <- FALSE
       }
       if (missing(fClower) && missing(fCupper))  fClower <- 0.95
+      if (missing(fClower) && !missing(fCupper)) fClower <- 1/fCupper
+      if (!missing(fClower) && missing(fCupper)) fCupper <- 1/fClower
+    }
+    if (nms_match[2]) {  # PE
+      if (missing(fClower) && missing(fCupper))  fClower <- theta1
       if (missing(fClower) && !missing(fCupper)) fClower <- 1/fCupper
       if (!missing(fClower) && missing(fCupper)) fCupper <- 1/fClower
     }
@@ -146,10 +159,6 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
     } else {
       fCNmax <- Inf
     }
-  } else {
-    fClower <- 0
-    fCupper <- Inf
-    fCNmax <- Inf
   }
   
   # Check usage of conditional error rates / power
@@ -204,13 +213,14 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
   rm(t1, t2)
   
   ## Evaluation of stage 1
-  BE <- (p11 < cl$siglev[1] & p12 < cl$siglev[1])
+  BE <- (p11 <= cl$siglev[1] & p12 <= cl$siglev[1])
   
   # Cases with BE == TRUE are clear: early stop due to BE
   # Cases with BE == FALSE are not yet clear:
   # - calculate power for stage 1
+  diffm_s1 <- lGMR # if (usePE) pes else lGMR
   pwr_s1 <- .calc.power(alpha = cl$siglev[1], ltheta1 = ltheta1, 
-                        ltheta2 = ltheta2, diffm = lGMR, 
+                        ltheta2 = ltheta2, diffm = diffm_s1, 
                         sem = se.fac * sqrt(mses), df = df, method = pmethod)
   # - if result is FALSE and power for stage 1 is 'sufficiently high', then
   #   the result will be considered a fail (ie leave FALSE)
@@ -220,13 +230,10 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
   
   # From those NAs may still consider some of them as failure due to futility:
   # Futility check - here only regarding PE or CI (fCNmax comes later)
-  if (!is.null(fCrit) && sum(nms_match[1:2]) > 0) {
+  if (fCrit != "no" && sum(nms_match[1:2]) > 0) {
     lfClower <- log(fClower)
     lfCupper <- log(fCupper)
     if (nms_match[1]) {
-      outside <- ((pes - lfClower) < 1.25e-5 | (lfCupper - pes) < 1.25e-5)
-    }
-    if (nms_match[2]) {
       tval <- qt(1 - 0.05, df)  # use 90% CI
       #tval <- qt(1 - cl$siglev[1], df)  # use adjusted CI for this check
       hw <- tval * se.fac * sqrt(mses)
@@ -234,6 +241,9 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
       upper <- pes + hw
       outside <- (lower > lfCupper) | (upper < lfClower)
       rm(tval, hw, lower, upper)
+    }
+    if (nms_match[2]) {
+      outside <- ((pes - lfClower) < 1.25e-5 | (lfCupper - pes) < 1.25e-5)
     }
     fut <- fut + sum(is.na(BE) & outside)
     # Set the ones identified as futile to a failure
@@ -290,7 +300,7 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
       # Define target power for ssr
       pwr_ssr <- targetpower
       if ((ssr.conditional == "error_power") && (fCpower <= targetpower)) {
-        # Use conditional power
+        # Use conditional estimated target power
         pwr_ssr <- 1 - (1 - targetpower) / (1 - pwr_s1)
       }
       
@@ -300,7 +310,7 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
         # Set sign of lGMR to the sign of estimated point estimate
         # (Maurer et al call this 'adaptive planning step')
         sgn_pes_tmp <- ifelse(pes_tmp >= 0, 1, -1)
-        lGMR_ssr <- lGMR * sgn_pes_tmp * if (lGMR >= 0) 1 else -1
+        lGMR_ssr <- abs(lGMR) * sgn_pes_tmp
       }
     }
     # Sample size for stage 2
@@ -321,7 +331,7 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
     # - if n2 is infinite, then we consider this as fail too
     BE2[is.infinite(n2)] <- FALSE
     # - Otherwise check if n1+n2 is greater than fCNmax (if so, set to fail)
-    if (!is.null(fCrit) && nms_match[3])
+    if (fCrit != "no" && nms_match[3])
       BE2[n1 + n2 > fCNmax] <- FALSE
     s2[BE2 == FALSE] <- 1  # such a case is considered to be gone up to stage 1
     fut <- fut + if (all(is.na(BE2))) 0 else sum(BE2 == FALSE)
@@ -417,3 +427,6 @@ power.2stage.in <- function(alpha, weight, max.comb.test = TRUE, n1, CV,
   class(res) <- c("pwrtsd", "list")
   res
 }  # end function power.2stage.in
+
+# alias of the function
+power.tsd.in <- power.2stage.in

@@ -8,10 +8,22 @@ export(
     , power.2stage.fC
     , power.2stage.GS
     , power.2stage.in
+    , interim.2stage.in
+    , final.2stage.in
     , power.2stage.p
     , power.2stage.pAF
     , power.2stage.ssr
     , sampleN2.TOST
+    , power.tsd
+    , power.tsd.KM
+    , power.tsd.fC
+    , power.tsd.GS
+    , power.tsd.in
+    , interim.tsd.in
+    , final.tsd.in
+    , power.tsd.p
+    , power.tsd.pAF
+    , power.tsd.ssr
 )
 
 # Import all packages listed as Imports or Depends
@@ -21,8 +33,11 @@ import(
 # good practice would be importFrom
 #importFrom(PowerTOST, CV2se, CV2mse, OwensQ)
 #importFrom(stats, pt, qt, pnorm, qnorm, rnorm, rchisq, quantile)
-importFrom(mvtnorm, pmvt, pmvnorm, GenzBretz)
+importFrom(mvtnorm, pmvt, pmvnorm, GenzBretz, rmvnorm)
+importFrom(cubature, hcubature)
 
 # Define S3 methods for the return value class "pwrtsd"
 # of the power.2stage.xyz() functions
 S3method(print, pwrtsd)
+# class "evaltsd"
+S3method(print, evaltsd)

@@ -1,5 +1,6 @@
 \encoding{utf-8}
-\name{power.2stage.GS}
+\name{power.tsd.GS}
+\alias{power.tsd.GS}
 \alias{power.2stage.GS}
 \title{
 Power calculation for non-adaptive group sequential (2-stage) BE studies
@@ -10,8 +11,8 @@ Power calculation for non-adaptive group sequential (2-stage) BE studies
   The number of subjects in both stages has to be prespecified (non-adaptive).
   }
 \usage{
-power.2stage.GS(alpha = c(0.0294, 0.0294), n, CV, theta0, theta1, theta2,
-                fCrit = c("PE", "CI"), fClower, fCupper, nsims,
+power.tsd.GS(alpha = c(0.0294, 0.0294), n, CV, theta0, theta1, theta2,
+                fCrit = c("CI", "PE"), fClower, fCupper, nsims,
                 setseed = TRUE, details = FALSE)
 }
 \arguments{
@@ -48,10 +49,10 @@ power.2stage.GS(alpha = c(0.0294, 0.0294), n, CV, theta0, theta1, theta2,
     is outside the range defined in the next two  arguments \verb{"fClower"} and
     \verb{"fCupper"}.\cr
     If set to \verb{"CI"} the study stops after \ifelse{html}{\out{stage&nbsp;1}}{stage~1}
-    if not \acronym{BE} and if the confidence interval of
+    if not \acronym{BE} and if the 90\% confidence interval of
     \ifelse{html}{\out{stage&nbsp;1}}{stage~1} evaluation is outside the range
     defined in the next two arguments.\cr
-    Defaults to \verb{"PE"}.
+    Defaults to \verb{"CI"}.
   }
   \item{fClower}{
     Lower limit of the futility criterion. Defaults to \verb{0} if missing,
@@ -120,11 +121,11 @@ Zheng Ch, Zhao L, Wang J. \emph{Modifications of sequential designs in bioequiva
 Pharm Stat. 2015; 14(3):180--8. \doi{10.1002/pst.1672}
 }
 \seealso{
-\code{\link{power.2stage}} and \code{\link{power.2stage.p}} for adaptive sequential designs.
+\code{\link{power.tsd}} and \code{\link{power.tsd.p}} for adaptive sequential designs.
 }
 \examples{
 # using the Pocock alpha settings and no futility rule
 # (defaults), a CV of 20\% and 12 subjects in both stages,
 # midway interim
-power.2stage.GS(CV=0.2, n=c(12,12))
+power.tsd.GS(CV=0.2, n=c(12,12))
 }
