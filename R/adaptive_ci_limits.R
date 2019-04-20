@@ -25,19 +25,26 @@ ind <- function(x, y, d, weight, diff1, diff2, sem1, sem2, df1, df2, lt = FALSE)
 indv <- function(x, d, weight, diff1, diff2, sem1, sem2, df1, df2, lt = FALSE) {
   matrix(apply(x, 2, 
                function(z) comb(z[1], z[2], weight) <= 
-                 comb(pd(d, diff1, sem1, df1, lt), pd(d, diff2, sem2, df2, lt), 
-                      weight)), 
+                 comb(pd(d, diff1, sem1, df1, lt), 
+                      pd(d, diff2, sem2, df2, lt), 
+                      weight)
+               ),
          ncol = ncol(x))
 }
 
-## Define function Qd from (8.8) as function of d (and subtract a)
+## Define function Qd from (8.8) as a function in d (and subtract a)
 Qd_a <- function(d, a1, a0, a, weight, diff1, diff2, sem1, sem2, df1, df2, 
                  lt = FALSE) {
-  a1 + cubature::hcubature(f = indv, lowerLimit = c(a1, 0), 
-                           upperLimit = c(a0, 1), d = d, weight = weight,
-                           diff1 = diff1, diff2 = diff2, sem1 = sem1, sem2 = sem2,
-                           df1 = df1, df2 = df2, lt = lt, maxEval = 10000, 
-                           vectorInterface = TRUE)$integral - a
+  sgn <- if (lt) 1 else -1 # direction of H0 (>= 0 vs. <= 0)
+  a1d <- if (a1 == 0) 0 else 1 - pnorm(qnorm(1 - a1) + sgn * d / sem1)
+  a0d <- if (a0 == 1) 1 else 1 - pnorm(qnorm(1 - a0) + sgn * d / sem1)
+  # Only define the case where we continue to second stage
+  a1d + cubature::hcubature(f = indv, 
+                            lowerLimit = c(a1d, 0), upperLimit = c(a0d, 1), 
+                            d = d, weight = weight, diff1 = diff1, 
+                            diff2 = diff2, sem1 = sem1, sem2 = sem2, 
+                            df1 = df1, df2 = df2, lt = lt, maxEval = 1000, 
+                            vectorInterface = TRUE)$integral - a
 }
 
 ## Define function to calculate adaptive (1 - a) confidence region
@@ -48,7 +55,8 @@ adaptive_ci_limit <- function(diff1, diff2, sem1, sem2, df1, df2,
   # lower_bnd = FALSE creates upper bound u from one-sided interval (-Inf, u)
   
   # Need root of Qd_a
-  diff_tmp <- (df1 * diff1 + df2 * diff2) / (df1 + df2)
+  diff_tmp <- (min(df1, 1e+06) * diff1 + min(df2, 1e+06) * diff2) / 
+    (min(df1, 1e+06) + min(df2, 1e+06))
   search_int <- diff_tmp + c(-6, 6) * max(sem1, sem2)
   lt <- if (lower_bnd) FALSE else TRUE
   uniroot(f = Qd_a, interval = search_int, a1 = a1, a0 = a0, a = a, 
@@ -67,19 +75,15 @@ median_unbiased_pe <- function(diff1, diff2, sem1, sem2, df1, df2,
 ## Repeated confidence bounds for combination tests according to Section 8.2.2
 repeated_ci <- function(diff1, diff2 = NULL, sem1, sem2 = NULL, df1, df2 = NULL,
                         a1, a2 = NULL, weight = NULL, stage = 1) {
-  tol <- 1e-06
   if (stage == 1) {
-    #search_int <- diff1 + c(-6, 6) * sem1
-    #l <- uniroot(f = function(d) pd(d, diff1, sem1, df1, lt = FALSE) - a1,
-    #             interval = search_int, tol = tol)$root
-    #u <- uniroot(f = function(d) pd(d, diff1, sem1, df1, lt = TRUE) - a1,
-    #             interval = search_int, tol = tol)$root
     l <- diff1 - sem1 * qt(1 - a1, df1)
     u <- diff1 + sem1 * qt(1 - a1, df1)
   } else if (stage == 2) {
+    tol <- 1e-06
     stopifnot(!is.null(diff2), !is.null(sem2), !is.null(df2), !is.null(a2),
               !is.null(weight))
-    diff_tmp <- (df1 * diff1 + df2 * diff2) / (df1 + df2)
+    diff_tmp <- (min(df1, 1e+06) * diff1 + min(df2, 1e+06) * diff2) / 
+      (min(df1, 1e+06) + min(df2, 1e+06))
     search_int <- diff_tmp + c(-6, 6) * max(sem1, sem2)
     l <- uniroot(f = function(d) comb(pd(d, diff1, sem1, df1, lt = FALSE), 
                                       pd(d, diff2, sem2, df2, lt = FALSE), 
@@ -93,6 +97,6 @@ repeated_ci <- function(diff1, diff2 = NULL, sem1, sem2 = NULL, df1, df2 = NULL,
     stop("Only stage equal to 1 or 2 implemented.")
   }
   res <- c(l, u)
-  names(res) <- c("lower CL", "upper CL")
+  names(res) <- c("lower RCL", "upper RCL")
   if (l <= u) res else NA
 }

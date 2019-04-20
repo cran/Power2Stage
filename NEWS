@@ -1,3 +1,12 @@
+Version 0.5.2 (easter egg)
+2019-04-21
+   - Maintenance release with mainly bug fixes.
+   - Bug fix in calculation of median unbiased estimate within final.tsd.in().
+   - Typos and minor wording and formatting corrections (man pages and x.tds.in()).
+   - Bug fix in power.tsd.GS (regarding variable hw).
+   - Bug in interim.tsd.in() w.r.t to power > target triggering
+     futulity fixed (THX to mittyri).
+
 Version 0.5-1 (belated easter egg)
 2018-04-03
    - All functions xyz.2stage.ab() now have an alias xyz.tsd.ab(), e.g. instead
@@ -9,7 +18,7 @@ Version 0.5-1 (belated easter egg)
    - Added interim.2stage.in() and final.2stage.in() to perform interim and
      final analysis of 2 stage designs based on the Standard Combination or
      Maximum Combination Test (also includes a print class).
-   - Update defaults of power.2stage.in() in order to be consistent with 
+   - Update defaults of power.2stage.in() in order to be consistent with
      Paper from Maurer et al (2018).
    - Aliases power.tsd.xyz introduced (not public yet).
    - Experimental function power.tsd.2m() to deal with 2 PK metrics
