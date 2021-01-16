@@ -74,15 +74,16 @@ interim.tsd.in(alpha, weight, max.comb.test = TRUE, targetpower = 0.8,
   \item{GMR}{
     Assumed ratio of geometric means (T/R) to be used in power calculation
     for \ifelse{html}{\out{stage&nbsp;1}}{stage 1} and sample size re-estimation
-    for \ifelse{html}{\out{stage&nbsp;2}}{stage 2}. If missing, defaults to 0.95.
+    for \ifelse{html}{\out{stage&nbsp;2}}{stage 2}.
   }
   \item{usePE}{
     If \verb{TRUE} the sample size re-estimation is done with the observed
     point estimate (\acronym{PE}) of the treatment difference in
     \ifelse{html}{\out{stage&nbsp;1}}{stage 1}.\cr
     Defaults to \verb{FALSE}.\cr
-    Note: The futility inspection via the power of stage 1 is always done with
-    the planning value \code{GMR}.
+    Note: The power of stage 1 used for the futility inspection and calculation
+    of the estimated conditional target power is always calculated with the
+    planning value \code{GMR}.
   }
   \item{min.n2}{
     Minimum sample size of \ifelse{html}{\out{stage&nbsp;2}}{stage 2}. Defaults to 4.\cr
@@ -186,11 +187,16 @@ interim.tsd.in(alpha, weight, max.comb.test = TRUE, targetpower = 0.8,
   define the two pairs of weights (w, 1-w) and (w*, 1-w*).\cr\cr
   If \verb{ssr.conditional = "error_power"}, the design scheme generally
   calculates the estimated conditional target power of the second stage and
-  uses this value as desired target power in the sample size re-estimation process.
-  If \code{fCpower} > \code{targetpower}, then the conditional target power
-  may actually be negative. This does not seem sensible. Therefore, for such
+  uses this value as desired target power in the sample size re-estimation process:\cr
+  If \code{fCpower} > \code{targetpower}, then the conditional estimated
+  target power may be negative. This does not seem sensible. Therefore, for such
   cases the desired target power for the sample size re-calculation will be set
-  to \code{targetpower}.
+  to \code{targetpower}, i.e. \code{ssr.conditional} will be set to \code{"error"}.\cr
+  Also, if the futility criterion based on the power of stage 1 is met,
+  then the conditional estimated target power will be negative. Thus, no further
+  sample size calculation can be made. To acknowledge that this rule is nonbinding,
+  for the purpose of calculating n2 the argument \code{ssr.conditional} is set
+  to \code{"error"}.
 }
 \value{
   Returns an object of class \verb{"evaltsd"} with all the input arguments and results
@@ -204,7 +210,9 @@ interim.tsd.in(alpha, weight, max.comb.test = TRUE, targetpower = 0.8,
   \item{p12}{Observed p-value for second hypothesis.}
   \item{z1}{z statistic value for first null hypothesis.}
   \item{z2}{z statistic value for second null hypothesis.}
-  \item{RCI}{(Exact) repeated confidence interval for \ifelse{html}{\out{stage&nbsp;1}}{stage 1}.}
+  \item{RCI}{Repeated confidence interval for \ifelse{html}{\out{stage&nbsp;1}}{stage 1}. Corresponds to the usual CI with level alpha1.}
+  \item{MEUE}{If the study stops, the median unbiased point estimate as estimate for the final adjusted
+  geometric mean ratio after stage 1 (note that the value is identical to \code{GMR1}.)}
   \item{futility}{Three dimensional vector with either 0 or 1. The first
   component represents futility due to Power of first stage > \code{fCpower},
   the second futility due to \verb{CI} (or \verb{PE}) outside of
@@ -254,7 +262,7 @@ Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 
 
 Maurer W, Jones B, Chen Y. \emph{Controlling the type 1 error rate in two-stage
 sequential designs when testing for average bioequivalence.}\cr
-Stat Med. 2018;1--21. \doi{10.1002/sim.7614}.
+Stat Med. 2018; 37(10): 1587--1607. \doi{10.1002/sim.7614}.
 
 Wassmer G, Brannath W. \emph{Group Sequential and Confirmatory Adaptive Designs
 in Clinical Trials.}\cr
@@ -264,6 +272,10 @@ Springer 2016. \doi{10.1007/978-3-319-32562-0}.
 \code{\link{power.tsd.in}, \link{final.tsd.in}}
 }
 \examples{
-# Example from Maurer et al
-interim.tsd.in(GMR1 = exp(0.0424), CV1 = 0.3682, n1 = 20, max.n = 4000)
+# Example from Maurer et al.
+interim.tsd.in(GMR = 0.95, max.n = 4000,
+               GMR1 = exp(0.0424), CV1 = 0.3682, n1 = 20)
+# Example 2 from Potvin et al.
+interim.tsd.in(GMR = 0.95, GMR1 = 1.0876, CV1 = 0.18213, n1 = 12,
+               fCrit = "No", ssr.conditional = "no")
 }

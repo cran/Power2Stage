@@ -92,7 +92,7 @@ final.tsd.in(alpha, weight, max.comb.test = TRUE, GMR1, CV1, n1, df1 = NULL,
 \details{
   The observed values \code{GMR1}, \code{CV1}, \code{n1} must be obtained
   using data from stage 1 only, and \code{GMR2}, \code{CV2}, \code{n2} must
-  be obtained using data from stage 2 only. This may be done via the usual 
+  be obtained using data from stage 2 only. This may be done via the usual
   ANOVA approach.\cr\cr
   The optional arguments \code{df1}, \code{SEM1}, \code{df2} and \code{SEM2}
   require a somewhat advanced knowledge (provided in the raw output from for
@@ -115,9 +115,9 @@ final.tsd.in(alpha, weight, max.comb.test = TRUE, GMR1, CV1, n1, df1 = NULL,
   \item{z2}{Combination test statistic for second null hypothesis (standard
   combination test statistic in case of \code{max.comb.test = FALSE} or
   maximum combination test statistic in case of \code{max.comb.test = TRUE})}
-  \item{RCI}{(Exact) repeated confidence interval for
+  \item{RCI}{Repeated confidence interval for
   \ifelse{html}{\out{stage&nbsp;2}}{stage 2}.}
-  \item{MEUE}{Median unbiased point estimate as estimate for the final 
+  \item{MEUE}{Median unbiased point estimate as estimate for the final adjusted
   geometric mean ratio after stage 2.}
   \item{stop_BE}{Logical, indicating whether \acronym{BE} can be concluded after
   \ifelse{html}{\out{stage&nbsp;2}}{stage 2} or not.}
@@ -136,7 +136,7 @@ Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 
 
 Maurer W, Jones B, Chen Y. \emph{Controlling the type 1 error rate in two-stage
 sequential designs when testing for average bioequivalence.}\cr
-Stat Med. 2018;1--21. \doi{10.1002/sim.7614}.
+Stat Med. 2018; 37(10): 1587--1607. \doi{10.1002/sim.7614}.
 
 Wassmer G, Brannath W. \emph{Group Sequential and Confirmatory Adaptive Designs
 in Clinical Trials.}\cr
@@ -149,4 +149,7 @@ Springer 2016. \doi{10.1007/978-3-319-32562-0}.
 # Example from Maurer et al.
 final.tsd.in(GMR1 = exp(0.0424), CV1 = 0.3682, n1 = 20,
              GMR2 = exp(-0.0134), CV2 = 0.3644, n2 = 36)
+# Example 2 from Potvin et al.
+final.tsd.in(GMR1 = 1.0876, CV1 = 0.18213, n1 = 12,
+             GMR2 = 0.9141, CV2 = 0.25618, n2 = 8)
 }

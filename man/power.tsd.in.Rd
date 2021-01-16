@@ -76,7 +76,8 @@ power.tsd.in(alpha, weight, max.comb.test = TRUE, n1, CV, targetpower = 0.8,
     point estimate (\acronym{PE}) of the treatment difference in
     \ifelse{html}{\out{stage&nbsp;1}}{stage 1}.\cr
     Defaults to \verb{FALSE}.\cr
-    Note: The futility inspection via the power of stage 1 is always done with
+    Note: The power of stage 1 used for the futility inspection and calculation
+    of the estimated conditional target power is always calculated with the
     the planning value \code{GMR}.
   }
   \item{min.n2}{
@@ -200,11 +201,11 @@ power.tsd.in(alpha, weight, max.comb.test = TRUE, n1, CV, targetpower = 0.8,
   define the two pairs of weights (w, 1-w) and (w*, 1-w*).\cr\cr
   If \verb{ssr.conditional = "error_power"}, the design scheme generally
   calculates the estimated conditional target power of the second stage and
-  uses this value as desired target power in the sample size re-estimation process.
-  If \code{fCpower} > \code{targetpower}, then the conditional target power
-  may actually be negative. This does not seem sensible. Therefore, for such
+  uses this value as desired target power in the sample size re-estimation process:\cr
+  If \code{fCpower} > \code{targetpower}, then the conditional estimated
+  target power may be negative. This does not seem sensible. Therefore, for such
   cases the desired target power for the sample size re-calculation will be set
-  to \code{targetpower}.
+  to \code{targetpower}, i.e. \code{ssr.conditional} will be set to \code{"error"}.
 }
 \value{
   Returns an object of class \verb{"pwrtsd"} with all the input arguments and results
@@ -237,11 +238,11 @@ Patterson SD, Jones B. \emph{Bioequivalence and Statistics in Clinical Pharmacol
 Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 2017.
 
 Kieser M, Rauch G. \emph{Two-stage designs for cross-over bioequivalence trials.}\cr
-Stat Med. 2015; 34(16):2403--16. \doi{10.1002/sim.6487}.
+Stat Med. 2015; 34(16): 2403--16. \doi{10.1002/sim.6487}.
 
 Maurer W, Jones B, Chen Y. \emph{Controlling the type 1 error rate in two-stage
 sequential designs when testing for average bioequivalence.}\cr
-Stat Med. 2018;1--21. \doi{10.1002/sim.7614}.
+Stat Med. 2018; 37(10): 1587--1607. \doi{10.1002/sim.7614}.
 
 Wassmer G, Brannath W. \emph{Group Sequential and Confirmatory Adaptive Designs
 in Clinical Trials.}\cr

@@ -18,7 +18,7 @@ print.evaltsd <- function(x, ...) {
     cat(" - Observed point estimate from stage 1 is ", not_pe, "used for SSR\n",
         sep = "")
     if (x$ssr.conditional == "no") {
-      cat(" - Without conditional error rates and conditional (estimated target) power\n")
+      cat(" - Without conditional error rates and conditional estimated target power\n")
     } else {
       cat(" - With ")
       if (x$ssr.conditional == "error") {
@@ -26,16 +26,19 @@ print.evaltsd <- function(x, ...) {
       } else {
         if (x$fCpower > x$targetpower)
           cat("conditional error rates\n")
+        else if ((!x$stop_BE) && (x$'Power Stage 1' >= x$fCpower))
+          cat("conditional error rates\n")
         else
           cat("conditional error rates and conditional estimated target power\n")
       }
     }
     cat("\nInterim analysis after first stage\n")
     cat("- Derived key statistics:\n")
-    cat(sprintf("  z1 = %.5f, z2 = %.5f", x$z1, x$z2), ",\n", sep = "")
+    cat(sprintf("  z1 = %.5f, z2 = %.5f", x$z1, x$z2), "\n", sep = "")
     cat("  Repeated CI = ",
         sprintf("(%.5f, %.5f)", x$RCI[[1]], x$RCI[[2]]), "\n", sep = "")
-
+    cat("  Median unbiased estimate = ", sprintf("%.4f", x$MEUE), "\n",
+        sep = "")
     if (x$stop_fut) {
       cat("- Futility criterion met:\n")
       if (x$futility[[1]] == 1) {
@@ -75,14 +78,18 @@ print.evaltsd <- function(x, ...) {
         cat("- Decision: Stop due to BE\n")
       } else {
         cat("- Calculated n2 = ", x$n2, "\n", sep = "")
-        cat("- Decision: Continue to stage 2 with ", x$n2, " subjects\n", 
+        cat("- Decision: Continue to stage 2 with ", x$n2, " subjects\n",
             sep = "")
       }
     }
+    if ((x$ssr.conditional == "error_power") && (x$fCpower > x$targetpower))
+      message("\nNote: ssr.conditional has been set to \"error\".")
+    if ((!x$stop_BE) && (x$'Power Stage 1' >= x$fCpower) && (x$ssr.conditional == "error_power"))
+      message("\nNote: n2 was calculated by setting ssr.conditional to \"error\".")
   } else {
     cat("\nFinal analysis after second stage\n")
     cat("- Derived key statistics:\n")
-    cat(sprintf("  z1 = %.5f, z2 = %.5f", x$z1, x$z2), ",\n", sep = "")
+    cat(sprintf("  z1 = %.5f, z2 = %.5f", x$z1, x$z2), "\n", sep = "")
     cat("  Repeated CI = ",
         sprintf("(%.5f, %.5f)", x$RCI[[1]], x$RCI[[2]]), "\n", sep = "")
     cat("  Median unbiased estimate = ", sprintf("%.4f", x$MEUE), "\n",
