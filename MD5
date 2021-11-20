@@ -1,7 +1,7 @@
-27450d505d1abed04696bc9ba86aab3b *DESCRIPTION
+a6278b6bfd5df725ad820f8a2ca30e73 *DESCRIPTION
 104e3e989b6953629faadbcd434e9099 *NAMESPACE
-55b0d15986767672bfa9801ecbd035cc *NEWS.md
-80f2d2b41e8804a902c5d32a256fc0af *R/SampleN2.TOST.R
+3d52ec92ec9bb4b06896ecf85508a4f3 *NEWS.md
+5161c6dc06ee908dc41823a33b1fd014 *R/SampleN2.TOST.R
 17ff6283d2432a22f0c20e1e7a5e8f0f *R/adaptive_ci_limits.R
 d61a9a6d25dd89eb5f9a61e787fc5c2f *R/final_2stage_in.R
 b354483b2b505cd614bcc0874586d79e *R/helper.R
@@ -22,8 +22,8 @@ ffc2e3786ff64656161d5a7bab19483a *R/print_pwrtsd_s3.R
 3c33ae8f2618657fd8d8e5a3b1f4b39c *R/sampsiz2.R
 1217494871be0cb5b447de13ebe53a09 *R/sampsiz3.R
 6a7464730a247ab714793b86ac21b4e8 *R/sampsiz_n0.R
-2e0dfccf84e520ba36b126e9cef7510e *README.md
-ea6cf4ae923b12267717ac6a068dc9a0 *build/partial.rdb
+d0b78fac611f4ab00f5730aed4f6c5e3 *README.md
+4d72adec0df8c431928d2d94fed50318 *build/partial.rdb
 620280a692a1ad6a11cf1a82b4e69b46 *inst/doc/TSD_methods.pdf
 a17e34b5e731ffe3a1883079bbed4abc *man/final.tsd.in.Rd
 165e4560ac00150d5ed63336885c6460 *man/interim.tsd.in.Rd
@@ -34,4 +34,4 @@ e38dc8213fbd10668253c66cf52f4bc6 *man/power.tsd.fC.Rd
 aa016c5ab85749521fb2c51f9e74b538 *man/power.tsd.in.Rd
 60e5bce6d489113687b5cdbf2e851cfe *man/power.tsd.p.Rd
 0d3ad0e3b558cb6b68bec0de57329b64 *man/power.tsd.ssr.Rd
-3edf6df7885c63fdbafe0e54ea98c291 *man/sampleN2.TOST.Rd
+c5642c483cca4f79c625ddb2590c5fe4 *man/sampleN2.TOST.Rd

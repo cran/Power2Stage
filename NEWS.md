@@ -1,6 +1,19 @@
-# Power2Stage 0.5-3
-On CRAN 2021-01-18.
-Maintenance release
+# Power2Stage 0.5.4
+On CRAN 2021-11-20
+
+  * New development version
+  
+## Bug fixes
+
+  * False `df` for `n2>0` in `sampleN2.TOST()` fixed.
+  
+## Minor changes
+
+  * LazyData: yes entry from DESCRIPTION removed since no data folder was available.
+    Caused a NOTE during R CMD check instead of Ok.
+
+# Power2Stage 0.5.3
+On CRAN 2021-01-16.
 
 ## Bug fixes
 
@@ -23,6 +36,7 @@ Maintenance release
 
 # Power2Stage 0.5.2 (easter egg)
 On CRAN 2019-04-21.
+
 Maintenance release with mainly bug fixes.
 
 ## Bug fixes

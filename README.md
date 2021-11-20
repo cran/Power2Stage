@@ -1,24 +1,24 @@
 Power2Stage
 ================
 
-  - [Supported Methods](#supported-methods)
-      - [Simulation-based](#simulation-based)
-          - [‘Type 1’](#type-1)
-          - [‘Type 2’](#type-2)
-          - [Blinded Sample Size Re-estimation in the
+-   [Supported Methods](#supported-methods)
+    -   [Simulation-based](#simulation-based)
+        -   [‘Type 1’](#type-1)
+        -   [‘Type 2’](#type-2)
+        -   [Blinded Sample Size Re-estimation in the
             Interim](#blinded-sample-size-re-estimation-in-the-interim)
-          - [Group Sequential Design](#group-sequential-design)
-      - [Inverse-Normal Combination](#inverse-normal-combination)
-  - [Functions](#functions)
-      - [Main](#main)
-      - [Helpers](#helpers)
-  - [Examples](#examples)
-      - [Method B](#method-b)
-      - [Method C](#method-c)
-      - [Inverse-Normal Combination](#inverse-normal-combination-1)
-  - [Speed Comparisons](#speed-comparisons)
-  - [Installation](#installation)
-  - [Session Information](#session-information)
+        -   [Group Sequential Design](#group-sequential-design)
+    -   [Inverse-Normal Combination](#inverse-normal-combination)
+-   [Functions](#functions)
+    -   [Main](#main)
+    -   [Helpers](#helpers)
+-   [Examples](#examples)
+    -   [Method B](#method-b)
+    -   [Method C](#method-c)
+    -   [Inverse-Normal Combination](#inverse-normal-combination-1)
+-   [Speed Comparisons](#speed-comparisons)
+-   [Installation](#installation)
+-   [Session Information](#session-information)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -41,10 +41,9 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/Power2Stage?color=green)
 The package contains functions to obtain the operational characteristics
 (power, type I error, percentage of studies proceeding to the second
 stage, average and quantiles of total sample sizes) of bioequivalence
-studies in adaptive sequential Two-Stage Designs (TSD) via
-simulations.  
-Version 0.5.2 built 2020-04-26 with R 4.0.0 (stable release on CRAN
-2019-04-20).
+studies in adaptive sequential Two-Stage Designs (TSD) via simulations.
+
+Version 0.5.4 built 2021-11-20 with R 4.1.2 (stable release on CRAN NA).
 
 ## Supported Methods
 
@@ -55,10 +54,10 @@ might be confusing, [I
 classified](https://doi.org/10.1007/s00228-015-1806-2) the methods as
 two ‘types’:
 
-  - **‘Type 1’**  
+-   **‘Type 1’**  
     An adjusted *α* is used *both* in the interim as well as in the
     final analysis of pooled data.
-  - **‘Type 2’**  
+-   **‘Type 2’**  
     Whether an unadjusted or an adjusted *α* is used depends on interim
     power. An adjusted *α* is used in the final analysis of pooled data.
 
@@ -70,53 +69,54 @@ decision schemes of the published methods.
 
 #### ‘Type 1’
 
-  - [Potvin *et al.*](https://doi.org/10.1002/pst.294) (2008) ‘Method
+-   [Potvin *et al.*](https://doi.org/10.1002/pst.294) (2008) ‘Method
     B’: *α* 0.0294 (*θ*<sub>0</sub> 0.95, target power 0.80).
-  - [Fuglsang](https://doi.org/10.1208/s12248-013-9475-5) (2013) ‘Method
+-   [Fuglsang](https://doi.org/10.1208/s12248-013-9475-5) (2013) ‘Method
     B’: *α* 0.0284 (*θ*<sub>0</sub> 0.95, target power 0.90).
-  - [Karalis](https://doi.org/10.1016/j.ijpharm.2013.08.013) (2013)
+-   [Karalis](https://doi.org/10.1016/j.ijpharm.2013.08.013) (2013)
     ‘TSD-2’: *α* 0.0294 (*θ*<sub>0</sub> = PE, target power 0.80).
-  - [Fuglsang](https://doi.org/10.1208/s12248-014-9571-1) (2014) ‘Method
+-   [Fuglsang](https://doi.org/10.1208/s12248-014-9571-1) (2014) ‘Method
     B’ (parallel design): *α* 0.0294 (*θ*<sub>0</sub> 0.95, target power
     0.80).
-  - [Zheng *et al.*](https://doi.org/10.1002/pst.1672) (2015) ‘MSDBE’:
+-   [Zheng *et al.*](https://doi.org/10.1002/pst.1672) (2015) ‘MSDBE’:
     *α*<sub>1</sub> 0.01, *α*<sub>2</sub> 0.04.
-  - [Xu *et al.*](https://doi.org/10.1002/pst.1721) (2016) ‘Method E’:
+-   [Xu *et al.*](https://doi.org/10.1002/pst.1721) (2016) ‘Method E’:
     (*θ*<sub>0</sub> 0.95, target power 0.80, *n*<sub>max</sub> 42).  
-      - For *CV* 10–30%  
+    -   For *CV* 10–30%  
         *α*<sub>1</sub> 0.0294, *α*<sub>2</sub> 0.0357, futility rule on
         CI {0.9374, 1/0.9374}.
-      - For *CV* 30–55%  
+    -   For *CV* 30–55%  
         *α*<sub>1</sub> 0.0254, *α*<sub>2</sub> 0.0363, futility rule on
         CI {0.9305, 1/0.9305}.
-  - [Molins *et al.*](https://doi.org/10.1002/sim.7452) (2017) ‘Type 1
+-   [Molins *et al.*](https://doi.org/10.1002/sim.7452) (2017) ‘Type 1
     modified Potvin B’: *α* 0.0301 (*θ*<sub>0</sub> 0.95, target power
     0.80, min. *n<sub>2</sub>* = 1.5*n<sub>1</sub>*, *n<sub>max</sub>*
     150).
 
 #### ‘Type 2’
 
-  - [Potvin *et al.*](https://doi.org/10.1002/pst.294) (2008) ‘Method
+-   [Potvin *et al.*](https://doi.org/10.1002/pst.294) (2008) ‘Method
     C’: *α* 0.0294 (*θ*<sub>0</sub> 0.95, target power 0.80).
-  - [Montague *et al.*](https://doi.org/10.1002/pst.483) (2011) ‘Method
+-   [Montague *et al.*](https://doi.org/10.1002/pst.483) (2011) ‘Method
     D’: *α* 0.0280 (*θ*<sub>0</sub> 0.90, target power 0.80).
-  - [Fuglsang](https://doi.org/10.1208/s12248-013-9475-5) (2013) ‘Method
+-   [Fuglsang](https://doi.org/10.1208/s12248-013-9475-5) (2013) ‘Method
     C/D’:  
     *α* 0.0274 (*θ*<sub>0</sub> 0.95, target power 0.90).  
     *α* 0.0269 (*θ*<sub>0</sub> 0.90, target power 0.90).
-  - [Karalis and Macheras](https://doi.org/10.1007/s11095-013-1026-3)
-    (2013) ‘TSD’: *α* 0.0294 (*θ*<sub>0</sub> = PE, target power 0.80).
-  - [Karalis](https://doi.org/10.1016/j.ijpharm.2013.08.013) (2013)
+-   [Karalis and
+    Macheras](https://doi.org/10.1007/s11095-013-1026-3) (2013) ‘TSD’:
+    *α* 0.0294 (*θ*<sub>0</sub> = PE, target power 0.80).
+-   [Karalis](https://doi.org/10.1016/j.ijpharm.2013.08.013) (2013)
     ‘TSD-1’: *α* 0.0280 (*θ*<sub>0</sub> = PE, target power 0.80).
-  - [Xu *et al.*](https://doi.org/10.1002/pst.1721) (2016) ‘Method F’:
+-   [Xu *et al.*](https://doi.org/10.1002/pst.1721) (2016) ‘Method F’:
     (*θ*<sub>0</sub> 0.95, target power 0.80, *n<sub>max</sub>* 180).  
-      - For *CV* 10–30%  
+    -   For *CV* 10–30%  
         *α*<sub>1</sub> 0.0248, *α*<sub>2</sub> 0.0364, futility rule on
         CI {0.9492, 1/0.9492}.
-      - For *CV* 30–55%  
+    -   For *CV* 30–55%  
         *α*<sub>1</sub> 0.0259, *α*<sub>2</sub> 0.0349, futility rule on
         CI {0.9350, 1/0.9350}.
-  - [Molins *et al.*](https://doi.org/10.1002/sim.7452) (2017) ‘Type 2
+-   [Molins *et al.*](https://doi.org/10.1002/sim.7452) (2017) ‘Type 2
     modified Potvin C’: *α* 0.0280 (*θ*<sub>0</sub> 0.95, target power
     0.80, min. *n<sub>2</sub>* = 1.5*n<sub>1</sub>*, *n<sub>max</sub>*
     150).
@@ -145,7 +145,7 @@ and Brannath](https://doi.org/10.1007/978-3-319-32562-0) (2016), [Maurer
 Defaults employed if not specified in the function call:
 
 | function          | `theta0` | `target power` | `usePE` | `Nmax` | `max.n` | `fCrit` | `fClower` |
-| ----------------- | :------: | :------------: | :-----: | :----: | :-----: | :-----: | :-------: |
+|-------------------|:--------:|:--------------:|:-------:|:------:|:-------:|:-------:|:---------:|
 | `power.tsd()`     |  `0.95`  |     `0.80`     | `FALSE` | `Inf`  |    –    |    –    |     –     |
 | `power.tsd.fC()`  |  `0.95`  |     `0.80`     | `FALSE` |   –    |  `Inf`  | `"PE"`  |  `0.80`   |
 | `power.tsd.KM()`  |  `0.95`  |     `0.80`     |    –    | `150`  |    –    |    –    |     –     |
@@ -173,24 +173,24 @@ type I error (*i.e.*, `theta0` set to the value of `theta1` or
 
 **Futility Criteria in the Interim**
 
-  - `Nmax`: The study will stop if the estimated total sample size
+-   `Nmax`: The study will stop if the estimated total sample size
     exceeds `Nmax`.
-  - `fCrit` (`"PE"` or `"CI"`): The study will stop if outside `fClower`
+-   `fCrit` (`"PE"` or `"CI"`): The study will stop if outside `fClower`
     and `1/fClower`.
-      - `"PE"`: `fClower` defaults to 0.80.
-      - `"CI"`: `fClower` defaults to 0.925 (except in function
+    -   `"PE"`: `fClower` defaults to 0.80.
+    -   `"CI"`: `fClower` defaults to 0.925 (except in function
         `power.tsd.in()`, where it defaults to 0.95).
 
 <small>[TOC ↩](#power2stage)</small>
 
 ### Helpers
 
-  - `sampleN2.TOST()`  
+-   `sampleN2.TOST()`  
     Estimates the sample size of stage 2 to achieve at least the target
     power.
-  - `interim.tsd.in()`  
+-   `interim.tsd.in()`  
     Interim analysis based on the Inverse-Normal Combination method.
-  - `final.tsd.in()`  
+-   `final.tsd.in()`  
     Final analysis based on the Inverse-Normal Combination method.
 
 <small>[TOC ↩](#power2stage)</small>
@@ -313,8 +313,9 @@ interim.tsd.in(GMR = 0.95, GMR1 = 1.0876, CV1 = 0.18213, n1 = 12)
 # 
 # Interim analysis after first stage
 # - Derived key statistics:
-#   z1 = 3.10000, z2 = 1.70344,
+#   z1 = 3.10000, z2 = 1.70344
 #   Repeated CI = (0.92491, 1.27891)
+#   Median unbiased estimate = NA
 # - No futility criterion met
 # - Test for BE not positive (not considering any futility rule)
 # - Calculated n2 = 6
@@ -339,7 +340,7 @@ final.tsd.in(GMR1 = 1.0876, CV1 = 0.18213, n1 = 12,
 # 
 # Final analysis after second stage
 # - Derived key statistics:
-#   z1 = 2.87952, z2 = 2.60501,
+#   z1 = 2.87952, z2 = 2.60501
 #   Repeated CI = (0.87690, 1.17356)
 #   Median unbiased estimate = 1.0135
 # - Decision: BE achieved
@@ -353,7 +354,7 @@ of 88.45–116.38% reported by Potvin *et al.*
 
 ## Speed Comparisons
 
-Performed on a Xeon E3-1245v3 3.4 GHz, 8 MB cache, 16 GB RAM, R 4.0.3
+Performed on a Xeon E3-1245v3 3.4 GHz, 8 MB cache, 16 GB RAM, R 4.1.2
 64 bit on Windows 7.
 
 ‘Method B’ (*CV* 0.20, *n*<sub>1</sub> 12).
@@ -415,70 +416,76 @@ Inspect this information for reproducibility. Of particular importance
 are the versions of R and the packages used to create this workflow. It
 is considered good practice to record this information with every
 analysis.  
-Version 0.5.2 built 2020-04-26 with R 4.0.0.
+Version 0.5.4 built 2021-11-20 with R 4.1.2.
 
 ``` r
 options(width = 80)
 devtools::session_info()
-# - Session info ---------------------------------------------------------------
-#  setting  value                       
-#  version  R version 4.0.3 (2020-10-10)
-#  os       Windows 10 x64              
-#  system   x86_64, mingw32             
-#  ui       RTerm                       
-#  language EN                          
-#  collate  German_Germany.1252         
-#  ctype    German_Germany.1252         
-#  tz       Europe/Berlin               
-#  date     2021-01-16                  
+# - Session info  --------------------------------------------------------------
+#  hash: bow and arrow, play or pause button, registered
+# 
+#  setting  value
+#  version  R version 4.1.2 (2021-11-01)
+#  os       Windows 10 x64 (build 19043)
+#  system   x86_64, mingw32
+#  ui       RTerm
+#  language en
+#  collate  German_Germany.1252
+#  ctype    German_Germany.1252
+#  tz       Europe/Berlin
+#  date     2021-11-20
+#  pandoc   2.14.0.3 @ C:/Program Files/RStudio/bin/pandoc/ (via rmarkdown)
 # 
 # - Packages -------------------------------------------------------------------
-#  package       * version date       lib source        
-#  assertthat      0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-#  callr           3.5.1   2020-10-13 [1] CRAN (R 4.0.3)
-#  cli             2.2.0   2020-11-20 [1] CRAN (R 4.0.3)
-#  crayon          1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-#  cubature        2.0.4.1 2020-07-06 [1] CRAN (R 4.0.2)
-#  desc            1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-#  devtools        2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-#  digest          0.6.27  2020-10-24 [1] CRAN (R 4.0.3)
-#  ellipsis        0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
-#  evaluate        0.14    2019-05-28 [1] CRAN (R 4.0.0)
-#  fansi           0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-#  fs              1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
-#  glue            1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
-#  htmltools       0.5.0   2020-06-16 [1] CRAN (R 4.0.0)
-#  knitr           1.30    2020-09-22 [1] CRAN (R 4.0.2)
-#  lifecycle       0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-#  magrittr        2.0.1   2020-11-17 [1] CRAN (R 4.0.3)
-#  memoise         1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-#  mvtnorm         1.1-1   2020-06-09 [1] CRAN (R 4.0.0)
-#  pkgbuild        1.2.0   2020-12-15 [1] CRAN (R 4.0.3)
-#  pkgload         1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
-#  Power2Stage   * 0.5.2   2019-04-20 [1] CRAN (R 4.0.0)
-#  PowerTOST       1.5-2   2020-10-27 [1] CRAN (R 4.0.3)
-#  prettyunits     1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-#  processx        3.4.5   2020-11-30 [1] CRAN (R 4.0.3)
-#  ps              1.5.0   2020-12-05 [1] CRAN (R 4.0.3)
-#  purrr           0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-#  R6              2.5.0   2020-10-28 [1] CRAN (R 4.0.3)
-#  Rcpp            1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-#  remotes         2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-#  rlang           0.4.9   2020-11-26 [1] CRAN (R 4.0.3)
-#  rmarkdown       2.6     2020-12-14 [1] CRAN (R 4.0.3)
-#  rprojroot       2.0.2   2020-11-15 [1] CRAN (R 4.0.3)
-#  sessioninfo     1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-#  stringi         1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
-#  stringr         1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-#  TeachingDemos   2.12    2020-04-07 [1] CRAN (R 4.0.0)
-#  testthat        3.0.1   2020-12-17 [1] CRAN (R 4.0.3)
-#  usethis         2.0.0   2020-12-10 [1] CRAN (R 4.0.3)
-#  withr           2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-#  xfun            0.19    2020-10-30 [1] CRAN (R 4.0.3)
-#  yaml            2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
+#  package       * version date (UTC) lib source
+#  cachem          1.0.6   2021-08-19 [1] CRAN (R 4.1.1)
+#  callr           3.7.0   2021-04-20 [1] CRAN (R 4.1.1)
+#  cli             3.1.0   2021-10-27 [1] CRAN (R 4.1.1)
+#  crayon          1.4.2   2021-10-29 [1] CRAN (R 4.1.1)
+#  cubature        2.0.4.2 2021-05-13 [1] CRAN (R 4.1.0)
+#  desc            1.4.0   2021-09-28 [1] CRAN (R 4.1.1)
+#  devtools        2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
+#  digest          0.6.28  2021-09-23 [1] CRAN (R 4.1.1)
+#  ellipsis        0.3.2   2021-04-29 [1] CRAN (R 4.1.1)
+#  evaluate        0.14    2019-05-28 [1] CRAN (R 4.1.1)
+#  fastmap         1.1.0   2021-01-25 [1] CRAN (R 4.1.1)
+#  fs              1.5.0   2020-07-31 [1] CRAN (R 4.1.1)
+#  glue            1.4.2   2020-08-27 [1] CRAN (R 4.1.1)
+#  htmltools       0.5.2   2021-08-25 [1] CRAN (R 4.1.1)
+#  knitr           1.36    2021-09-29 [1] CRAN (R 4.1.1)
+#  lifecycle       1.0.1   2021-09-24 [1] CRAN (R 4.1.1)
+#  magrittr        2.0.1   2020-11-17 [1] CRAN (R 4.1.1)
+#  memoise         2.0.0   2021-01-26 [1] CRAN (R 4.1.1)
+#  mvtnorm         1.1-3   2021-10-08 [1] CRAN (R 4.1.1)
+#  pkgbuild        1.2.0   2020-12-15 [1] CRAN (R 4.1.1)
+#  pkgload         1.2.3   2021-10-13 [1] CRAN (R 4.1.1)
+#  Power2Stage   * 0.5-4   2021-11-20 [1] local
+#  PowerTOST       1.5-3   2021-01-18 [1] CRAN (R 4.1.1)
+#  prettyunits     1.1.1   2020-01-24 [1] CRAN (R 4.1.1)
+#  processx        3.5.2   2021-04-30 [1] CRAN (R 4.1.1)
+#  ps              1.6.0   2021-02-28 [1] CRAN (R 4.1.1)
+#  purrr           0.3.4   2020-04-17 [1] CRAN (R 4.1.1)
+#  R6              2.5.1   2021-08-19 [1] CRAN (R 4.1.1)
+#  Rcpp            1.0.7   2021-07-07 [1] CRAN (R 4.1.1)
+#  remotes         2.4.1   2021-09-29 [1] CRAN (R 4.1.1)
+#  rlang           0.4.12  2021-10-18 [1] CRAN (R 4.1.1)
+#  rmarkdown       2.11    2021-09-14 [1] CRAN (R 4.1.1)
+#  rprojroot       2.0.2   2020-11-15 [1] CRAN (R 4.1.1)
+#  rstudioapi      0.13    2020-11-12 [1] CRAN (R 4.1.1)
+#  sessioninfo     1.2.1   2021-11-02 [1] CRAN (R 4.1.2)
+#  stringi         1.7.5   2021-10-04 [1] CRAN (R 4.1.1)
+#  stringr         1.4.0   2019-02-10 [1] CRAN (R 4.1.1)
+#  TeachingDemos   2.12    2020-04-07 [1] CRAN (R 4.1.1)
+#  testthat        3.1.0   2021-10-04 [1] CRAN (R 4.1.1)
+#  usethis         2.1.3   2021-10-27 [1] CRAN (R 4.1.1)
+#  withr           2.4.2   2021-04-18 [1] CRAN (R 4.1.1)
+#  xfun            0.27    2021-10-18 [1] CRAN (R 4.1.1)
+#  yaml            2.2.1   2020-02-01 [1] CRAN (R 4.1.1)
 # 
-# [1] C:/Program Files/R/library
-# [2] C:/Program Files/R/R-4.0.3/library
+#  [1] C:/Program Files/R/library
+#  [2] C:/Program Files/R/R-4.1.2/library
+# 
+# ------------------------------------------------------------------------------
 ```
 
 <small>[TOC ↩](#power2stage)</small>
